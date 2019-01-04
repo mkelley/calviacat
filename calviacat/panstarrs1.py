@@ -107,8 +107,8 @@ class PanSTARRS1(Catalog):
         sr = max((sources.separation(c).max() for c in sources)) * scale / 2
 
         self.logger.debug(
-            'Fetching PS1 catalog from STScI over {} field-of-view.'.format(
-                sr))
+            ('Fetching PS1 catalog from STScI over {:.2g} field-of-view.')
+            .format(sr))
 
         params = dict(RA=sources.ra.mean().deg, DEC=sources.dec.mean().deg,
                       SR=sr.deg, max_records=self.max_records,
@@ -135,8 +135,8 @@ class PanSTARRS1(Catalog):
         tab['decstack'] = np.array(
             [str(x.decode()) for x in tab['decstack']])
 
-        self.logger.debug('Updating panstarrs with {} sources.'.format(
-            len(tab)))
+        self.logger.debug('Updating {} with {} sources.'.format(
+            self.table.name, len(tab)))
 
         self.db.executemany('''
         INSERT OR IGNORE INTO {}

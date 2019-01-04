@@ -7,9 +7,11 @@ Calibrate star photometry by comparison to a catalog.  PanSTARRS 1 catalog curre
 * requests
 * astropy
 
-## Example
+## Examples
 
-Calibrate a Las Cumbres Observatory image of 41P/Tuttle-Giacobini-Kresak:
+Calibrate a Las Cumbres Observatory images of 41P/Tuttle-Giacobini-Kresak.
+
+## PanSTARRS catalog with color correction
 
 ``` python
 import os
@@ -63,7 +65,68 @@ plt.tight_layout()
 
 ```
 
-![alt text](lco-example.png "Best-fit calibration")
+![alt text](lco-example-ps1.png "Best-fit calibration")
+
+
+## SkyMapper catalog without color correction
+
+No r-band coverage in DR1 for this image, so just calibrate to g without a color correction.
+
+``` python
+import os
+import requests
+import numpy as np
+import matplotlib.pyplot as plt
+from astropy.table import Table
+from astropy.io import fits
+from astropy.coordinates import SkyCoord
+import calviacat as cvc
+
+if os.path.exists('lco.fits'):
+    hdu = fits.open('lco.fits')
+else:
+    r = requests.get('https://archive-api.lco.global/frames/6913550/').json()
+    hdu = fits.open(r['url'])
+    hdu.writeto('lco.fits')
+
+im = hdu['sci'].data
+h = hdu['sci'].header
+phot = Table(hdu['cat'].data)
+
+phot = phot[phot['FLAG'] == 0]  # clean LCO catalog
+lco = SkyCoord(phot['RA'], phot['DEC'], unit='deg')
+
+# initialize catalog
+skym = cvc.SkyMapper('cat.db')
+
+try:
+    n = len(skym.search(lco)[0])
+except ValueError:
+    skym.fetch_field(lco)
+
+
+# crossmatch LCO photometry table with catalog
+objids, distances = skym.xmatch(lco)
+
+# Calibrate this g-band image, include a color correction
+g_inst = -2.5 * np.log10(phot['FLUX'])
+g_err = phot['FLUXERR'] / phot['FLUX'] * 1.0857
+
+zp_mean, zp_median, unc, g = skym.cal_constant(objids, g_inst, 'g')
+
+# plot results
+fig = plt.figure(1)
+fig.clear()
+ax = fig.gca()
+ax.scatter(g, g - g_inst, marker='.', color='k')
+ax.axhline(zp_mean)
+ax.axhline(zp_median)
+plt.setp(ax, xlabel='$g$ (mag)', ylabel=r'$g - g_{\rm inst}$ (mag)')
+plt.tight_layout()
+
+```
+
+![alt text](lco-example-skymapper.png "Best-fit calibration")
 
 ## Acknowledgements
 

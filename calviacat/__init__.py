@@ -1,2 +1,3 @@
 from .catalog import *
 from .panstarrs1 import PanSTARRS1
+from .skymapper import SkyMapper

@@ -178,9 +178,7 @@ class Catalog(ABC):
         ).fetchall()
 
         if len(rows) == 0:
-            import pdb
-            pdb.set_trace()
-            return np.array([]), SkyCoord([], {}, unit='deg'), np.array([])
+            raise ValueError('No sources found.')
 
         objids, ra, dec = [np.array(x) for x in zip(*rows)]
         cat = SkyCoord(ra, dec, unit='deg')
@@ -289,6 +287,9 @@ class Catalog(ABC):
         zp_mean, zp_median, unc : float
             Zero-point magnitude mean, median, and uncertainty.
 
+        m : float
+            Catalog magnitude.
+
         """
 
         if filt not in self.table.filter2col:
@@ -317,7 +318,7 @@ class Catalog(ABC):
         dm = m - m_inst
         i = np.isfinite(dm)
         mms = sigma_clipped_stats(dm[i])
-        return mms
+        return mms[0], mms[1], mms[2], m
 
     def cal_color(self, matched, m_inst, filt, color, mlim=[14, 18],
                   gmi=[0.2, 3.0]):
