@@ -1,6 +1,12 @@
 # calviacat
 Calibrate star photometry by comparison to a catalog.  PanSTARRS 1 catalog currently supported.
 
+## Requirements
+
+* sqlite3
+* requests
+* astropy
+
 ## Example
 
 Calibrate a Las Cumbres Observatory image of 41P/Tuttle-Giacobini-Kresak:
