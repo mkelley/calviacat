@@ -56,3 +56,5 @@ plt.setp(ax, xlabel='$g-r$ (mag)', ylabel='$g$ (mag)')
 plt.tight_layout()
 
 ```
+
+.. image:: lco-example.png
