@@ -57,4 +57,4 @@ plt.tight_layout()
 
 ```
 
-.. image:: lco-example.png
+![alt text](lco-example.png "Best-fit calibration")
