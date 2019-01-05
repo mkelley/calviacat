@@ -178,7 +178,7 @@ class Catalog(ABC):
         ).fetchall()
 
         if len(rows) == 0:
-            raise ValueError('No sources found.')
+            return [], SkyCoord([], [], unit='deg')
 
         objids, ra, dec = [np.array(x) for x in zip(*rows)]
         cat = SkyCoord(ra, dec, unit='deg')

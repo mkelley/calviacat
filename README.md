@@ -60,7 +60,7 @@ ax = fig.gca()
 ax.scatter(gmr, g - g_inst, marker='.', color='k')
 x = np.linspace(0, 1.5)
 ax.plot(x, C * x + zp, 'r-')
-plt.setp(ax, xlabel='$g-r$ (mag)', ylabel='$g$ (mag)')
+plt.setp(ax, xlabel='$g-r$ (mag)', ylabel=r'$g-g_{\rm inst}$ (mag)')
 plt.tight_layout()
 
 ```
