@@ -262,7 +262,7 @@ class Catalog(ABC):
         return rows
 
     def cal_constant(self, matched, m_inst, filt, mlim=[14, 18],
-                     gmi=[0.2, 3.0]):
+                     gmi_lim=None):
         """Estimate calibration constant without color correction.
 
         Parameters
@@ -279,8 +279,9 @@ class Catalog(ABC):
         mlim : list, optional
             Only fit stars with this magnitude range in filter `filt`.
 
-        gmi : list, optional
-            Only fit stars with this g-i color range.
+        gmi_lim : list, optional
+            Only fit stars with this g-i color range, or `None` to
+            skip test.
 
         Returns
         -------
@@ -290,38 +291,46 @@ class Catalog(ABC):
         m : float
             Catalog magnitude.
 
+        gmi : ndarray
+            g-i color for each source.
+
         """
 
         if filt not in self.table.filter2col:
             raise ValueError('Filter must be one of {}.'.format(
                 self.table.filter2col.keys()))
 
-        limits = [min(gmi), max(gmi), min(mlim), max(mlim)]
+        if gmi_lim is None:
+            limits = [-np.inf, np.inf, min(mlim), max(mlim)]
+        else:
+            limits = [min(gmi_lim), max(gmi_lim), min(mlim), max(mlim)]
 
-        columns = ("{filt[mag]},{filt[err]},"
-                   "{g[mag]} - {i[mag]}").format(
-                       filt=self.table.filter2col[filt],
-                       g=self.table.filter2col['g'],
-                       i=self.table.filter2col['i'])
+        columns = ("{filt[mag]},{filt[err]},{g[mag]}-{i[mag]}").format(
+            filt=self.table.filter2col[filt],
+            g=self.table.filter2col['g'],
+            i=self.table.filter2col['i'])
         cat = self.lookup(matched, columns)
 
-        m = np.ma.MaskedArray(np.zeros(len(matched)))
-        m.mask = np.ones(len(matched), bool)  # masked until proven innocent
+        m = np.ma.MaskedArray(np.zeros(len(matched)),
+                              mask=np.ones(len(matched), bool))
+        gmi = np.zeros_like(m.data)
         for i in range(len(cat)):
             if len(cat[i]) > 0:
-                m[i], merr, gmi = cat[i]
-                if ((gmi >= limits[0]) * (gmi <= limits[1])
-                    * (m[i] >= limits[2]) * (m[i] <= limits[3])
-                        * (merr > 2)):
-                    m[i].mask = False
+                m[i], merr, gmi[i] = cat[i]
+                if all((gmi[i] >= limits[0], gmi[i] <= limits[1],
+                        m[i] >= limits[2], m[i] <= limits[3],
+                        m[i] / merr > 2)):
+                    m.mask[i] = False
+                else:
+                    m.mask[i] = True
 
         dm = m - m_inst
-        i = np.isfinite(dm)
+        i = np.isfinite(dm) * ~m.mask
         mms = sigma_clipped_stats(dm[i])
-        return mms[0], mms[1], mms[2], m
+        return mms[0], mms[1], mms[2], m, gmi
 
     def cal_color(self, matched, m_inst, filt, color, mlim=[14, 18],
-                  gmi=[0.2, 3.0]):
+                  gmi_lim=[0.2, 3.0]):
         """Estimate calibration constant with color correction.
 
         Parameters
@@ -342,8 +351,8 @@ class Catalog(ABC):
         mlim : list, optional
             Only fit stars with this magnitude range in filter ``filt``.
 
-        gmi : list, optional
-            Only fit stars with this g-i color range.
+        gmi_lim : list, optional
+            Only fit stars with this g-i color range, or `None` to disable.
 
         Returns
         -------
@@ -351,8 +360,11 @@ class Catalog(ABC):
             Zero-point magnitude, color slope, and uncertainty.
                 m - m_inst = C * color + zp
 
-        m, cindex : float
+        m, cindex : MaskedArray
             Catalog magnitude and color index.
+
+        gmi : ndarray
+            g-i color for each source.
 
         """
 
@@ -361,7 +373,10 @@ class Catalog(ABC):
                 self.table.filter2col.keys()))
 
         blue, red = color.split('-')
-        limits = [min(gmi), max(gmi), min(mlim), max(mlim)]
+        if gmi_lim is None:
+            limits = [-np.inf, np.inf, min(mlim), max(mlim)]
+        else:
+            limits = [min(gmi_lim), max(gmi_lim), min(mlim), max(mlim)]
 
         columns = ("{filt[mag]},{filt[err]},{b[mag]}-{r[mag]},"
                    "{g[mag]}-{i[mag]}").format(
@@ -372,27 +387,31 @@ class Catalog(ABC):
                        i=self.table.filter2col['i'])
         cat = self.lookup(matched, columns)
 
-        m = np.ma.MaskedArray(np.zeros(len(matched)))
-        m.mask = np.ones(len(matched), bool)  # masked until proven innocent
+        m = np.ma.MaskedArray(np.zeros(len(matched)),
+                              mask=np.ones(len(matched), bool))
+        gmi = np.zeros_like(m.data)
         cindex = m.copy()
         for i in range(len(cat)):
             if len(cat[i]) > 0:
-                m[i], merr, cindex[i], gmi = cat[i]
-                if ((gmi >= limits[0]) * (gmi <= limits[1])
-                    * (m[i] >= limits[2]) * (m[i] <= limits[3])
-                        * (merr > 2)):
-                    m[i].mask = False
-                    cindex[i].mask = False
+                m[i], merr, cindex[i], gmi[i] = cat[i]
+                if all((gmi[i] >= limits[0], gmi[i] <= limits[1],
+                        m[i] >= limits[2], m[i] <= limits[3],
+                        m[i] / merr > 2)):
+                    m.mask[i] = False
+                    cindex.mask[i] = False
+                else:
+                    m.mask[i] = True
+                    cindex.mask[i] = True
 
         dm = m - m_inst
 
         model = models.Linear1D(slope=0, intercept=28)
         fitter = fitting.FittingWithOutlierRemoval(
             fitting.LinearLSQFitter(), sigma_clip)
-        i = np.isfinite(dm)
+        i = np.isfinite(dm) * ~dm.mask
         line, fit = fitter(model, cindex[i], dm[i])
         C = fit.slope.value
         zp = fit.intercept.value
         cal_unc = sigma_clipped_stats((dm - fit(cindex))[i])[2]
 
-        return zp, C, cal_unc, m, cindex
+        return zp, C, cal_unc, m, cindex, gmi
