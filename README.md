@@ -21,7 +21,7 @@ objids, distances = ps1.xmatch(lco)
 zp, C, unc, g, gmr, gmi = ps1.cal_color(objids, g_inst, 'g', 'g-r')
 ```
 
-![alt text](lco-example-ps1.png "Best-fit calibration")
+![alt text](examples/lco-ps1-color-corrected.png "Best-fit calibration")
 
 
 ## SkyMapper catalog without color correction
@@ -35,7 +35,7 @@ objids, distances = skym.xmatch(lco)
 zp_mean, zp_median, unc, g, gmi = skym.cal_constant(objids, g_inst, 'g')
 ```
 
-![alt text](lco-example-skymapper.png "Best-fit calibration")
+![alt text](examples/lco-skymapper-constant.png "Best-fit calibration")
 
 ## Acknowledgements
 
