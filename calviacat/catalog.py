@@ -329,8 +329,8 @@ class Catalog(ABC):
         mms = sigma_clipped_stats(dm[i])
         return mms[0], mms[1], mms[2], m, gmi
 
-    def cal_color(self, matched, m_inst, filt, color, mlim=[14, 18],
-                  gmi_lim=[0.2, 3.0]):
+    def cal_color(self, matched, m_inst, filt, color, C=None,
+                  mlim=[14, 18], gmi_lim=[0.2, 3.0]):
         """Estimate calibration constant with color correction.
 
         Parameters
@@ -347,6 +347,9 @@ class Catalog(ABC):
 
         color : string
             Color to consider, e.g., 'g-r'.
+
+        C : float, optional
+            Set to a value to hold the color correction fixed.
 
         mlim : list, optional
             Only fit stars with this magnitude range in filter ``filt``.
@@ -406,8 +409,13 @@ class Catalog(ABC):
         dm = m - m_inst
 
         model = models.Linear1D(slope=0, intercept=28)
+        if C is not None:
+            model.slope.value = C
+            model.slope.fixed = True
+
         fitter = fitting.FittingWithOutlierRemoval(
             fitting.LinearLSQFitter(), sigma_clip)
+
         i = np.isfinite(dm) * ~dm.mask
         line, fit = fitter(model, cindex[i], dm[i])
         C = fit.slope.value

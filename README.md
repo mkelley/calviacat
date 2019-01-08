@@ -1,5 +1,5 @@
-# calviacat
-Calibrate star photometry by comparison to a catalog.  PanSTARRS 1 and SkyMapper catalogs currently implemented.
+# calviacat v1.0.0
+Calibrate star photometry by comparison to a catalog.  PanSTARRS 1 and SkyMapper catalogs currently implemented.  Catalog queries are cached so that subsequent calibrations of the same or similar fields can be more quickly executed.
 
 ## Requirements
 
@@ -23,6 +23,11 @@ zp, C, unc, g, gmr, gmi = ps1.cal_color(objids, g_inst, 'g', 'g-r')
 
 ![alt text](lco-example-ps1.png "Best-fit calibration")
 
+The color correction slope may also be held fixed with the `C` parameter:
+
+``` python
+zp, C, unc, g, gmr, gmi = ps1.cal_color(objids, g_inst, 'g', 'g-r', C=-0.089)
+```
 
 ## SkyMapper catalog without color correction
 
