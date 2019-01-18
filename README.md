@@ -1,4 +1,4 @@
-# calviacat v1.0.0
+# calviacat v1.0.1
 Calibrate star photometry by comparison to a catalog.  PanSTARRS 1 and SkyMapper catalogs currently implemented.  Catalog queries are cached so that subsequent calibrations of the same or similar fields can be more quickly executed.
 
 ## Requirements
