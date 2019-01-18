@@ -13,6 +13,7 @@ import astropy.units as u
 from astropy.coordinates import SkyCoord
 from astropy.stats import sigma_clipped_stats, sigma_clip
 from astropy.modeling import models, fitting
+from astropy.version import version_info as astropy_version
 
 
 class TableDefinition:
@@ -417,7 +418,11 @@ class Catalog(ABC):
             fitting.LinearLSQFitter(), sigma_clip)
 
         i = np.isfinite(dm) * ~dm.mask
-        line, fit = fitter(model, cindex[i], dm[i])
+        if astropy_version[0] > 3 or (astropy_version[0] == 3 and astropy_version[1] >= 1):
+            # Return order changed in astropy 3.1 (http://docs.astropy.org/en/stable/changelog.html#id10)
+            fit, line = fitter(model, cindex[i], dm[i])
+        else:
+            line, fit = fitter(model, cindex[i], dm[i])
         C = fit.slope.value
         zp = fit.intercept.value
         cal_unc = sigma_clipped_stats((dm - fit(cindex))[i])[2]
