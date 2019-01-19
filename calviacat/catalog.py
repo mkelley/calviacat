@@ -420,7 +420,9 @@ class Catalog(ABC):
         i = np.isfinite(dm) * ~dm.mask
         if astropy_version[0] > 3 or (astropy_version[0] == 3 and astropy_version[1] >= 1):
             # Return order changed in astropy 3.1 (http://docs.astropy.org/en/stable/changelog.html#id10)
-            fit, line = fitter(model, cindex[i], dm[i])
+            # Also now returns a boolean mask array rather than a MaskedArray of the data which could
+            # be applied back to reconstuct 'line' if needed (not currently used)
+            fit, mask = fitter(model, cindex[i], dm[i])
         else:
             line, fit = fitter(model, cindex[i], dm[i])
         C = fit.slope.value
