@@ -3,7 +3,7 @@ from glob import glob
 from distutils.core import setup
 
 setup(name='calviacat',
-      version='1.0.0',
+      version='1.0.1',
       description='Calibrate star photometry by comparison to a catalog.',
       author='Michael S. P. Kelley',
       author_email='msk@astro.umd.edu',
