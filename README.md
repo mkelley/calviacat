@@ -5,7 +5,7 @@ Calibrate star photometry by comparison to a catalog.  PanSTARRS 1 and SkyMapper
 
 * sqlite3
 * requests
-* astropy
+* astropy, v3 or later
 
 ## Examples
 
