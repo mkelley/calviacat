@@ -13,7 +13,16 @@ import astropy.units as u
 from astropy.coordinates import SkyCoord
 from astropy.stats import sigma_clipped_stats, sigma_clip
 from astropy.modeling import models, fitting
-from astropy.version import version_info as astropy_version
+
+try:
+    from astropy.version import version_info as astropy_version
+except ImportError:
+    import astropy.version
+    astropy_version = [int(x) for x in astropy.version.version.split('.')]
+
+
+class CalibrationError(Exception):
+    pass
 
 
 class TableDefinition:
@@ -418,10 +427,16 @@ class Catalog(ABC):
             fitting.LinearLSQFitter(), sigma_clip)
 
         i = np.isfinite(dm) * ~dm.mask
-        if astropy_version[0] > 3 or (astropy_version[0] == 3 and astropy_version[1] >= 1):
-            # Return order changed in astropy 3.1 (http://docs.astropy.org/en/stable/changelog.html#id10)
-            # Also now returns a boolean mask array rather than a MaskedArray of the data which could
-            # be applied back to reconstuct 'line' if needed (not currently used)
+        if sum(i) == 0:
+            raise CalibrationError('All sources masked.')
+
+        if (astropy_version[0] > 3 or
+                (astropy_version[0] == 3 and astropy_version[1] >= 1)):
+            # Return order changed in astropy 3.1
+            # (http://docs.astropy.org/en/stable/changelog.html#id10)
+            # Also now returns a boolean mask array rather than a
+            # MaskedArray of the data which could be applied back to
+            # reconstuct 'line' if needed (not currently used)
             fit, mask = fitter(model, cindex[i], dm[i])
         else:
             line, fit = fitter(model, cindex[i], dm[i])
