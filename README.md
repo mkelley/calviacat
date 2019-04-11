@@ -7,8 +7,7 @@ calviacat is written by Michael S. P. Kelley, with contributions from: Tim Liste
 
 Kelley, Michael S. P. & Lister, Tim. 2019.  mkelley/calviacat: v1.0.2.  DOI: 10.5281/zenodo.2635841
 
-.. image:: https://zenodo.org/badge/DOI/10.5281/zenodo.2635841.svg
-   :target: https://doi.org/10.5281/zenodo.2635841
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.2635841.svg)](https://doi.org/10.5281/zenodo.2635841)
 
 ## Requirements
 
