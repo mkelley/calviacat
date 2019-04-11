@@ -5,6 +5,11 @@ Calibrate star photometry by comparison to a catalog.  PanSTARRS 1 and SkyMapper
 
 calviacat is written by Michael S. P. Kelley, with contributions from: Tim Lister.  It is licensed with the MIT License (see LICENSE for details).
 
+Kelley, Michael S. P. & Lister, Tim. 2019.  mkelley/calviacat: v1.0.2.  DOI: 10.5281/zenodo.2635841
+
+.. image:: https://zenodo.org/badge/DOI/10.5281/zenodo.2635841.svg
+   :target: https://doi.org/10.5281/zenodo.2635841
+
 ## Requirements
 
 * sqlite3
