@@ -76,7 +76,7 @@ The PS1 archive is hosted at STScI.  Cite Chambers et al. 2016 (https://ui.adsab
 
 The SkyMapper archive is hosted at the All-Sky Virtual Observatory (AVSO) node of the National Computational Infrastructure (NCI) site.  See http://skymapper.anu.edu.au/policies/authorship/ and http://nci.org.au/services/virtual-laboratories/all-sky-virtual-observatory/ .
 
-ATLAS-RefCat2 is hosted at STScI, [DOI 10.17909/t9-2p3r-7651](http://dx.doi.org/10.17909/t9-2p3r-7651).  Also cite Tonry et al, 2018 
+ATLAS-RefCat2 is hosted at STScI, [DOI 10.17909/t9-2p3r-7651](http://dx.doi.org/10.17909/t9-2p3r-7651).  Also cite Tonry et al. 2018 (https://ui.adsabs.harvard.edu/abs/2018ApJ...867..105T/abstract).
 
 The Pan-STARRS1 Surveys (PS1) and the PS1 public science archive have been made possible through contributions by the Institute for Astronomy, the University of Hawaii, the Pan-STARRS Project Office, the Max-Planck Society and its participating institutes, the Max Planck Institute for Astronomy, Heidelberg and the Max Planck Institute for Extraterrestrial Physics, Garching, The Johns Hopkins University, Durham University, the University of Edinburgh, the Queen's University Belfast, the Harvard-Smithsonian Center for Astrophysics, the Las Cumbres Observatory Global Telescope Network Incorporated, the National Central University of Taiwan, the Space Telescope Science Institute, the National Aeronautics and Space Administration under Grant No. NNX08AR22G issued through the Planetary Science Division of the NASA Science Mission Directorate, the National Science Foundation Grant No. AST-1238877, the University of Maryland, Eotvos Lorand University (ELTE), the Los Alamos National Laboratory, and the Gordon and Betty Moore Foundation.
 
