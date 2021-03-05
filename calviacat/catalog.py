@@ -223,7 +223,7 @@ class Catalog(ABC):
         i = d2d < self.match_limit
         n = i.sum()
         if n < self.min_matches:
-            self.logger.error('Fewer than 10 sources matched to PS1.')
+            self.logger.error('Fewer than {} sources matched.'.format(self.min_matches))
             return
 
         self.logger.info(
