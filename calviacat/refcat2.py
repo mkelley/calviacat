@@ -104,7 +104,7 @@ class RefCat2(Catalog):
         sr = max((sources.separation(c).max() for c in sources)) * scale / 2
 
         name = 'calviacat_{}'.format(
-            ''.join(random.choices(string.ascii_uppercase, k=4)))
+            ''.join(random.choices(string.ascii_uppercase, k=5)))
 
         self.logger.debug(
             ('Fetching ATLAS-RefCat2 catalog from MAST over {:.2g}'
@@ -127,7 +127,9 @@ class RefCat2(Catalog):
         )
 
         job = MastCasJobs(context="HLSP_ATLAS_REFCAT2", **self.credentials)
-        jobid = job.submit(q, task_name='calviacat refcat2 cone search')
+        jobid = job.submit(q, task_name=('calviacat refcat2 cone search {:.5f} {:.5f}'
+                                         .format(np.mean(sources.ra.deg),
+                                                 np.mean(sources.dec.deg))))
         status = job.monitor(jobid)
         if status[0] in (3, 4):
             raise CasJobsFailed('status={}, {}'.format(status[0], status[1]))
