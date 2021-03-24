@@ -74,7 +74,7 @@ Development of this code was supported by the NASA Solar System Observations pro
 
 The PS1 archive is hosted at STScI.  Cite Chambers et al. 2016 (https://ui.adsabs.harvard.edu/#abs/arXiv:1612.05560) and acknowledge the Pan-STARRS 1 survey, as needed.  See https://panstarrs.stsci.edu/ for details.
 
-The SkyMapper archive is hosted at the All-Sky Virtual Observatory (AVSO) node of the National Computational Infrastructure (NCI) site.  See http://skymapper.anu.edu.au/policies/authorship/ and http://nci.org.au/services/virtual-laboratories/all-sky-virtual-observatory/ .
+The SkyMapper archive is hosted at the All-Sky Virtual Observatory (AVSO) node of the National Computational Infrastructure (NCI) site.  See http://skymapper.anu.edu.au/tap/
 
 ATLAS-RefCat2 is hosted at STScI, [DOI 10.17909/t9-2p3r-7651](http://dx.doi.org/10.17909/t9-2p3r-7651).  Also cite Tonry et al. 2018 (https://ui.adsabs.harvard.edu/abs/2018ApJ...867..105T/abstract).
 
