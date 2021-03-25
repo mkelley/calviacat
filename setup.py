@@ -1,9 +1,8 @@
 #!/usr/bin/env python3
-from glob import glob
 from setuptools import setup
 
 setup(name='calviacat',
-      version='1.1.2',
+      version='1.2.0',
       description='Calibrate star photometry by comparison to a catalog.',
       author='Michael S. P. Kelley',
       author_email='msk@astro.umd.edu',
