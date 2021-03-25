@@ -238,7 +238,7 @@ class Catalog(ABC):
 
         return matched, d
 
-    def lookup(self, objids, columns):
+    def lookup(self, objids, columns, allow_null=False):
         """Lookup these columns for these objects.
 
         Parameters
@@ -249,6 +249,9 @@ class Catalog(ABC):
         columns : string
             Database columns to return.
 
+        allow_null : bool, optional
+            Set to ``True`` if null values are allowed.
+
         Returns
         -------
         rows : list
@@ -256,6 +259,12 @@ class Catalog(ABC):
             matched, the row will be an empty list.
 
         """
+
+        statement = '''
+        SELECT {columns} from {table}
+        WHERE {objid}=?
+        '''.format(columns=columns, table=self.table.name,
+                   objid=self.table.objid)
 
         rows = []
         for i, objid in enumerate(objids):
@@ -265,11 +274,17 @@ class Catalog(ABC):
                 row = self.db.execute('''
                 SELECT {columns} FROM {table}
                 WHERE {objid}=?
-                '''.format(objid=self.table.objid,
-                           table=self.table.name,
-                           columns=columns), [objid]).fetchone()
+                '''.format(
+                    objid=self.table.objid,
+                    table=self.table.name,
+                    columns=columns
+                ), [objid]).fetchone()
 
-            rows.append(row)
+            if None in row and not allow_null:
+                rows.append([])
+            else:
+                rows.append(row)
+
         return rows
 
     def cal_constant(self, matched, m_inst, filt, mlim=[14, 18],
@@ -334,6 +349,12 @@ class Catalog(ABC):
                     m.mask[i] = False
                 else:
                     m.mask[i] = True
+
+        if np.all(m.mask):
+            raise CalibrationError(
+                'No data returned from database.  Check `matched` and catalog '
+                'coverage of requested field.'
+            )
 
         dm = m - m_inst
         i = np.isfinite(dm) * ~m.mask
@@ -417,6 +438,11 @@ class Catalog(ABC):
                     m.mask[i] = True
                     cindex.mask[i] = True
 
+        if np.all(m.mask):
+            raise CalibrationError(
+                'No data returned from database.  Check `matched` and catalog '
+                'coverage of requested field.'
+            )
         dm = m - m_inst
 
         model = models.Linear1D(slope=0, intercept=28)

@@ -115,5 +115,12 @@ class SkyMapper(Catalog):
         INSERT OR IGNORE INTO {}
           VALUES({})
         '''.format(self.table.name, ','.join('?' * len(self.table.columns))),
-            tab)
+            self._masked_to_null(tab))
         self.db.commit()
+
+    @staticmethod
+    def _masked_to_null(tab):
+        """Replace masked values with ``None``."""
+        for row in tab:
+            yield [None if val is np.ma.masked else val
+                   for val in row]
