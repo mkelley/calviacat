@@ -35,10 +35,6 @@ COLUMN_DEFS = (
     ('z_flags', 'INTEGER'),
     ('z_ngood', 'INTEGER'),
     ('class_star', 'FLOAT'),
-    ('a', 'FLOAT'),
-    ('e_a', 'FLOAT'),
-    ('b', 'FLOAT'),
-    ('e_b', 'FLOAT'),
     ('u_psf', 'FLOAT'),
     ('e_u_psf', 'FLOAT'),
     ('v_psf', 'FLOAT'),
@@ -57,7 +53,33 @@ COLUMN_DEFS = (
 
 
 class SkyMapper(Catalog):
-    def __init__(self, dbfile, max_records=2000, **kwargs):
+    """Calibrate to SkyMapper catalog data.
+
+
+    Parameters
+    ----------
+    dbfile : string
+        Sqlite3 database file name.  If a database at the provided file name
+        does not exist, a new one will be created.
+
+    max_records : int, optional
+        Maximum number of records to return from online queries to SkyMapper.
+
+    dr : int
+        Use this SkyMapper data release number.
+
+    logger : Logger
+        Use this python logger for logging.
+
+    match_limit : astropy Quantity
+        Plane of sky tolerance for catalog matches.
+
+    min_matches : int
+        Throw an error if fewer than this many matches are found.    
+
+    """
+
+    def __init__(self, dbfile, max_records=2000, dr=2, **kwargs):
         filter2col = {}
         for f in 'uvgriz':
             filter2col[f] = {
@@ -66,6 +88,7 @@ class SkyMapper(Catalog):
             }
         skym = TableDefinition('skymapper', COLUMN_DEFS, 'object_id',
                                'raj2000', 'dej2000', filter2col)
+        self.dr = dr
         super().__init__(dbfile, skym, max_records=max_records, **kwargs)
 
     def fetch_field(self, sources, scale=1.25):
@@ -91,11 +114,12 @@ class SkyMapper(Catalog):
         q = '''
         SELECT TOP {max}
         {columns}
-        FROM dr1.master
+        FROM dr{dr}.master
         WHERE 1=CONTAINS(POINT('ICRS', raj2000, dej2000),
                          CIRCLE('ICRS', {ra}, {dec}, {sr}))
         ORDER BY ngood DESC
         '''.format(
+            dr=self.dr,
             max=self.max_records,
             columns=','.join(self.table.columns),
             ra=np.mean(sources.ra.deg),
