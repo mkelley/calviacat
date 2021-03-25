@@ -126,15 +126,6 @@ class PanSTARRS1(Catalog):
                 self.logger.error(q.text)
                 return
 
-        tab['objname'] = np.array(
-            [str(x.decode()) for x in tab['objname']])
-        tab['objid'] = np.array(
-            [str(x.decode()) for x in tab['objid']], int)
-        tab['rastack'] = np.array(
-            [str(x.decode()) for x in tab['rastack']])
-        tab['decstack'] = np.array(
-            [str(x.decode()) for x in tab['decstack']])
-
         self.logger.debug('Updating {} with {} sources.'.format(
             self.table.name, len(tab)))
 

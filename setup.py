@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 from glob import glob
-from distutils.core import setup
+from setuptools import setup
 
 setup(name='calviacat',
       version='1.1.1',
