@@ -5,9 +5,17 @@ Calibrate star photometry by comparison to a catalog.  PanSTARRS 1, ATLAS-RefCat
 
 calviacat is written by Michael S. P. Kelley, with contributions from: Tim Lister.  It is licensed with the MIT License (see LICENSE for details).
 
-Kelley, Michael S. P. & Lister, Tim. 2019.  mkelley/calviacat: v1.0.2.  DOI: 10.5281/zenodo.2635841
+When tracibility to this specific version is needed, cite:
 
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.2635841.svg)](https://doi.org/10.5281/zenodo.2635841)
+Kelley, Michael S. P. & Lister, Tim. 2021.  mkelley/calviacat: v1.2.0.  DOI: 10.5281/zenodo.5061298
+
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.5061298.svg)](https://doi.org/10.5281/zenodo.5061298)
+
+When one needs to cite the `calviacat` concept:
+
+Kelley, Michael S. P. & Lister, Tim. 2019.  mkelley/calviacat.  DOI: 10.5281/zenodo.2635840
+
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.2635840.svg)](https://doi.org/10.5281/zenodo.2635840)
 
 ## Requirements
 
