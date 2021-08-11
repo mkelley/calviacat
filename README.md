@@ -1,11 +1,11 @@
-# calviacat v1.2.0
+# calviacat v1.2.1
 Calibrate star photometry by comparison to a catalog.  PanSTARRS 1, ATLAS-RefCat2, and SkyMapper catalogs currently implemented.  Catalog queries are cached so that subsequent calibrations of the same or similar fields can be more quickly executed.
 
 ## Attribution and license
 
 calviacat is written by Michael S. P. Kelley, with contributions from: Tim Lister.  It is licensed with the MIT License (see LICENSE for details).
 
-When tracibility to this specific version is needed, cite:
+When traceability to this specific version is needed, cite:
 
 Kelley, Michael S. P. & Lister, Tim. 2021.  mkelley/calviacat: v1.2.0.  DOI: 10.5281/zenodo.5061298
 
