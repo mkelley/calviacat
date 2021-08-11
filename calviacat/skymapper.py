@@ -128,7 +128,7 @@ class SkyMapper(Catalog):
         )
         # self.logger.debug(q)
 
-        skym = Tap(url='http://api.skymapper.nci.org.au/public/tap/')
+        skym = Tap(url='https://api.skymapper.nci.org.au/public/tap/')
         job = skym.launch_job(q)
         tab = job.get_results()
 
