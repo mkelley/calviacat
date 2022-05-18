@@ -7,7 +7,9 @@ __all__ = [
 import io
 import requests
 import numpy as np
+import astropy.units as u
 from astropy.io import votable
+from astropy.table import Column
 from astroquery.utils.tap.core import TapPlus
 from .catalog import Catalog, TableDefinition
 
@@ -32,7 +34,13 @@ COLUMN_DEFS = (
     ('phot_rp_mean_flux_over_error', 'FLOAT'),
     ('astrometric_gof_al', 'FLOAT'),
     ('astrometric_excess_noise', 'FLOAT'),
-    ('astrometric_excess_noise_sig', 'FLOAT')
+    ('astrometric_excess_noise_sig', 'FLOAT'),
+    ('_gmag', 'FLOAT'),
+    ('_err_gmag', 'FLOAT'),
+    ('_rmag', 'FLOAT'),
+    ('_err_rmag', 'FLOAT'),
+    ('_imag', 'FLOAT'),
+    ('_err_imag', 'FLOAT'),
 )
 
 
@@ -71,7 +79,13 @@ class Gaia(Catalog):
         for f in ['G', 'bp', 'rp']:
             filter2col[f] = {
                 'mag': f'phot_{f.lower():}_mean_mag',
-                'err': f'phot_{f.lower():}_flux_over_error'
+                'err': f'phot_{f.lower():}_mean_flux_over_error'
+            }
+        # Add synthesized SDSS mags
+        for f in ['g', 'r', 'i']:
+            filter2col[f] = {
+                'mag': f'_{f:}mag',
+                'err': f'_err_{f:}mag'
             }
         gaia = TableDefinition('gaia', COLUMN_DEFS, 'source_id',
                                'ra', 'dec', filter2col)
@@ -109,7 +123,7 @@ class Gaia(Catalog):
         '''.format(
             table=self.gaia_table,
             max=self.max_records,
-            columns=','.join(self.table.columns),
+            columns=','.join([col for col in self.table.columns if col[0] != '_']),
             ra=np.mean(sources.ra.deg),
             dec=np.mean(sources.dec.deg),
             sr=sr.deg
@@ -120,6 +134,7 @@ class Gaia(Catalog):
         job = gaia.launch_job(q)
         tab = job.get_results()
 
+        tab = self._transform_filters(tab)
         self.logger.debug('Updating {} with {} sources.'.format(
             self.table.name, len(tab)))
 
@@ -129,6 +144,56 @@ class Gaia(Catalog):
         '''.format(self.table.name, ','.join('?' * len(self.table.columns))),
             self._masked_to_null(tab))
         self.db.commit()
+
+    def _transform_filters(self, tab):
+        """Transform the Gaia G. G_BP, G_RP magnitudes to SDSS g, r, i
+        using the equations in Table 5.7 of (DR2)
+        https://gea.esac.esa.int/archive/documentation/GDR2/Data_processing/chap_cu5pho/sec_cu5pho_calibr/ssec_cu5pho_PhotTransf.html
+        and Table 5.6 of (EDR3)
+        https://gea.esac.esa.int/archive/documentation/GEDR3/Data_processing/chap_cu5pho/cu5pho_sec_photSystem/cu5pho_ssec_photRelations.html
+        """
+
+        g = tab[self.table.filter2col['G']['mag']].data
+        e_g = tab[self.table.filter2col['G']['err']].data
+        bp = tab[self.table.filter2col['bp']['mag']].data
+        rp = tab[self.table.filter2col['rp']['mag']].data
+
+        if self.dr == 'dr2':
+            g_sdss = g - (0.13518 - 0.46245*(bp-rp) -
+                          0.25171*(bp-rp)**2 + 0.021349*(bp-rp)**3)
+            e_g_sdss = np.sqrt(e_g**2 + 0.16497**2)
+            r_sdss = g - (-0.12879 + 0.24662*(bp-rp) -
+                          0.027464*(bp-rp)**2 - 0.049465*(bp-rp)**3)
+            e_r_sdss = np.sqrt(e_g**2 + 0.066739**2)
+            i_sdss = g - (-0.29676 + 0.64728*(bp-rp) - 0.10141*(bp-rp)**2)
+            e_i_sdss = np.sqrt(e_g**2 + 0.098957**2)
+        elif self.dr == 'edr3':
+            g_sdss = g - (0.2199 - 0.6365*(bp-rp) -
+                          0.1548*(bp-rp)**2 + 0.0064*(bp-rp)**3)
+            e_g_sdss = np.sqrt(e_g**2 + 0.0745**2)
+            r_sdss = g - (-0.09837 + 0.08592*(bp-rp) +
+                          0.1907*(bp-rp)**2 - 0.1701*(bp-rp)**3 +
+                          0.02263*(bp-rp)**4)
+            e_r_sdss = np.sqrt(e_g**2 + 0.03776**2)
+            i_sdss = g - (-0.293 + 0.6404*(bp-rp) -
+                          0.09609*(bp-rp)**2 - 0.002104*(bp-rp)**3)
+            e_i_sdss = np.sqrt(e_g**2 + 0.04092**2)
+        else:
+            raise ValueError("Transformations not defined yet for other than DR2 and EDR3")
+
+        tab.add_column(Column(data=g_sdss, name='_gmag',
+                                    unit=u.mag))
+        tab.add_column(Column(data=e_g_sdss, name='_err_gmag',
+                                    unit=u.mag))
+        tab.add_column(Column(data=r_sdss, name='_rmag',
+                                    unit=u.mag))
+        tab.add_column(Column(data=e_r_sdss, name='_err_rmag',
+                                    unit=u.mag))
+        tab.add_column(Column(data=i_sdss, name='_imag',
+                                    unit=u.mag))
+        tab.add_column(Column(data=e_i_sdss, name='_err_imag',
+                                    unit=u.mag))
+        return tab
 
     @staticmethod
     def _masked_to_null(tab):
