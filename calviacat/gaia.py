@@ -134,6 +134,10 @@ class Gaia(Catalog):
         job = gaia.launch_job(q)
         tab = job.get_results()
 
+        # Compute mag. errors from fluxes
+        tab = self._add_mag_errors(tab)
+
+        # Transform Gaia magnitudes into SDSS g, r, i ones
         tab = self._transform_filters(tab)
         self.logger.debug('Updating {} with {} sources.'.format(
             self.table.name, len(tab)))
@@ -145,8 +149,20 @@ class Gaia(Catalog):
             self._masked_to_null(tab))
         self.db.commit()
 
+    def _add_mag_errors(self, tab):
+        """Adds magnitude errors to Gaia table <tab> and returns it
+        This assumes a symmetric error distribution which won't be correct at
+        very low flux levels but you shouldn't be using those for calibration.
+        """
+
+        FLUX2MAG = 2.5/np.log(10)
+        for filt in ['G', 'bp', 'rp']:
+            col_name = self.table.filter2col[filt]['err']
+            tab[col_name] = FLUX2MAG/tab[col_name]
+        return tab
+
     def _transform_filters(self, tab):
-        """Transform the Gaia G. G_BP, G_RP magnitudes to SDSS g, r, i
+        """Transform the Gaia G, G_BP, G_RP magnitudes to SDSS g, r, i
         using the equations in Table 5.7 of (DR2)
         https://gea.esac.esa.int/archive/documentation/GDR2/Data_processing/chap_cu5pho/sec_cu5pho_calibr/ssec_cu5pho_PhotTransf.html
         and Table 5.6 of (EDR3)
