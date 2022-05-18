@@ -59,7 +59,7 @@ class Gaia(Catalog):
         Plane of sky tolerance for catalog matches.
 
     min_matches : int
-        Throw an error if fewer than this many matches are found.    
+        Throw an error if fewer than this many matches are found.
 
     """
 
@@ -68,10 +68,10 @@ class Gaia(Catalog):
                           'edr3' : 'gaiaedr3.gaia_source',
                         }
         filter2col = {}
-        for f in ['g', 'bp', 'rp']:
+        for f in ['G', 'bp', 'rp']:
             filter2col[f] = {
-                'mag': f'phot_{f:}_mean_mag',
-                'err': f'phot_{f:}_flux_over_error'
+                'mag': f'phot_{f.lower():}_mean_mag',
+                'err': f'phot_{f.lower():}_flux_over_error'
             }
         gaia = TableDefinition('gaia', COLUMN_DEFS, 'source_id',
                                'ra', 'dec', filter2col)
