@@ -74,6 +74,7 @@ class Gaia(Catalog):
     def __init__(self, dbfile, max_records=2000, dr='dr2', **kwargs):
         table_mapping = { 'dr2' : 'gaiadr2.gaia_source',
                           'edr3' : 'gaiaedr3.gaia_source',
+                          'dr3' : 'gaiadr3.gaia_source',
                         }
         filter2col = {}
         for f in ['G', 'bp', 'rp']:
@@ -167,6 +168,8 @@ class Gaia(Catalog):
         https://gea.esac.esa.int/archive/documentation/GDR2/Data_processing/chap_cu5pho/sec_cu5pho_calibr/ssec_cu5pho_PhotTransf.html
         and Table 5.6 of (EDR3)
         https://gea.esac.esa.int/archive/documentation/GEDR3/Data_processing/chap_cu5pho/cu5pho_sec_photSystem/cu5pho_ssec_photRelations.html
+        and Table 5.8 of (DR3;appears identical, may not have been updated?)
+        https://gea.esac.esa.int/archive/documentation/GDR3/Data_processing/chap_cu5pho/cu5pho_sec_photSystem/cu5pho_ssec_photRelations.html
         """
 
         g = tab[self.table.filter2col['G']['mag']].data
@@ -183,7 +186,7 @@ class Gaia(Catalog):
             e_r_sdss = np.sqrt(e_g**2 + 0.066739**2)
             i_sdss = g - (-0.29676 + 0.64728*(bp-rp) - 0.10141*(bp-rp)**2)
             e_i_sdss = np.sqrt(e_g**2 + 0.098957**2)
-        elif self.dr == 'edr3':
+        elif self.dr == 'edr3' or self.dr == 'dr3':
             g_sdss = g - (0.2199 - 0.6365*(bp-rp) -
                           0.1548*(bp-rp)**2 + 0.0064*(bp-rp)**3)
             e_g_sdss = np.sqrt(e_g**2 + 0.0745**2)
