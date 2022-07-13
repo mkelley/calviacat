@@ -34,3 +34,45 @@ class TestGaia:
 
         new_table = gaia._add_mag_errors(table)
         assert_quantity_allclose(table['phot_g_mean_flux_over_error'], FLUX2MAG/flux_errors)
+
+    def test_transform_filters_bad_dr(self, tmpdir):
+
+        db_path = tmpdir.join('test.db')
+        gaia = Gaia(db_path)
+        job_data_file = data_path('dr2_1.vot')
+        table = Table.read(job_data_file)
+
+        gaia.dr = 'dr42'
+
+        with pytest.raises(ValueError) as e_info:
+            gaia._transform_filters(table)
+
+    def test_transform_filters_dr2(self, tmpdir):
+
+        db_path = tmpdir.join('test.db')
+        gaia = Gaia(db_path)
+        job_data_file = data_path('dr2_1.vot')
+        table = Table.read(job_data_file)
+
+        new_table = gaia._transform_filters(table)
+        for filt in ['g', 'r', 'i']:
+            assert f'_{filt}mag' in new_table.colnames
+            assert f'_err_{filt}mag' in new_table.colnames
+
+        mags = u.mag * [17.54, 18.426788, 20.573366]
+        assert_quantity_allclose(table['_rmag'], mags)
+
+    def test_transform_filters_dr3(self, tmpdir):
+
+        db_path = tmpdir.join('test.db')
+        gaia = Gaia(db_path, dr='dr3')
+        job_data_file = data_path('dr2_1.vot')
+        table = Table.read(job_data_file)
+
+        new_table = gaia._transform_filters(table)
+        for filt in ['g', 'r', 'i']:
+            assert f'_{filt}mag' in new_table.colnames
+            assert f'_err_{filt}mag' in new_table.colnames
+
+        mags = u.mag * [17.550606, 18.436804, 20.583124]
+        assert_quantity_allclose(table['_rmag'], mags)

@@ -198,7 +198,7 @@ class Gaia(Catalog):
                           0.09609*(bp-rp)**2 - 0.002104*(bp-rp)**3)
             e_i_sdss = np.sqrt(e_g**2 + 0.04092**2)
         else:
-            raise ValueError("Transformations not defined yet for other than DR2 and EDR3")
+            raise ValueError("Transformations not defined yet for other than DR2 and EDR3/DR3")
 
         tab.add_column(Column(data=g_sdss, name='_gmag',
                                     unit=u.mag))
