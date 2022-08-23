@@ -58,7 +58,8 @@ class Gaia(Catalog):
         Maximum number of records to return from online queries to SkyMapper.
 
     dr : string
-        Use this Gaia data release name.
+        Use this Gaia data release name. (One of 'dr2', 'edr3', dr3'; 'dr2' is
+        assumed if not specified)
 
     logger : Logger
         Use this python logger for logging.
