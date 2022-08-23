@@ -96,7 +96,7 @@ Data Processing and Analysis Consortium ([DPAC](https://www.cosmos.esa.int/web/g
 * Gaia DR2:
   * Gaia Collaboration et al. ([2016](http://dx.doi.org/10.1051/0004-6361/201629272)) *The Gaia mission*
   * Gaia Collaboration et al. ([2018](https://doi.org/10.1051/0004-6361/201833051)) *Gaia Data Release 2. Summary of the contents and survey properties.*
-  * Salgado et al. ([2017](http://dx.doi.org/10.1016/j.ascom.2017.08.002)) *The ESA Gaia Archive: Data Release 1
+  * Salgado, J. et al. ([2017](http://dx.doi.org/10.1016/j.ascom.2017.08.002)) *The ESA Gaia Archive: Data Release 1*
 * Gaia EDR3:
   * Gaia Collaboration et al. ([2016](http://dx.doi.org/10.1051/0004-6361/201629272)) *The Gaia mission*
   * Gaia Collaboration et al. ([2021](https://doi.org/10.1051/0004-6361/202039657e)) *Gaia Early Data Release 3. Summary of the contents and survey properties (Corrigendum)*
