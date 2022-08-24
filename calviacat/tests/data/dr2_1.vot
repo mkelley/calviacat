@@ -1,0 +1,180 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Produced with astropy.io.votable version 4.2.1
+     http://www.astropy.org/ -->
+<VOTABLE version="1.4" xmlns="http://www.ivoa.net/xml/VOTable/v1.4" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://www.ivoa.net/xml/VOTable/v1.4">
+ <RESOURCE type="results">
+  <TABLE>
+   <FIELD ID="source_id" datatype="long" name="source_id" ucd="meta.id">
+    <DESCRIPTION>
+     Unique source identifier (unique within a particular Data
+     Release)
+    </DESCRIPTION>
+   </FIELD>
+   <FIELD ID="ra" datatype="double" name="ra" ucd="pos.eq.ra;meta.main" unit="deg" utype="Char.SpatialAxis.Coverage.Location.Coord.Position2D.Value2.C1">
+    <DESCRIPTION>
+     Right ascension
+    </DESCRIPTION>
+   </FIELD>
+   <FIELD ID="dec" datatype="double" name="dec" ucd="pos.eq.dec;meta.main" unit="deg" utype="Char.SpatialAxis.Coverage.Location.Coord.Position2D.Value2.C2">
+    <DESCRIPTION>
+     Declination
+    </DESCRIPTION>
+   </FIELD>
+   <FIELD ID="ra_error" datatype="double" name="ra_error" ucd="stat.error;pos.eq.ra" unit="mas">
+    <DESCRIPTION>
+     Standard error of right ascension
+    </DESCRIPTION>
+   </FIELD>
+   <FIELD ID="dec_error" datatype="double" name="dec_error" ucd="stat.error;pos.eq.dec" unit="mas">
+    <DESCRIPTION>
+     Standard error of declination
+    </DESCRIPTION>
+   </FIELD>
+   <FIELD ID="DESIGNATION" arraysize="*" datatype="char" name="DESIGNATION" ucd="meta.id;meta.main">
+    <DESCRIPTION>
+     Unique source designation (unique across all Data Releases)
+    </DESCRIPTION>
+   </FIELD>
+   <FIELD ID="phot_variable_flag" arraysize="*" datatype="char" name="phot_variable_flag" ucd="meta.code;src.var">
+    <DESCRIPTION>
+     Photometric variability flag
+    </DESCRIPTION>
+   </FIELD>
+   <FIELD ID="astrometric_n_good_obs_al" datatype="int" name="astrometric_n_good_obs_al" ucd="meta.number">
+    <DESCRIPTION>
+     Number of good observations AL
+    </DESCRIPTION>
+   </FIELD>
+   <FIELD ID="phot_g_n_obs" datatype="int" name="phot_g_n_obs" ucd="meta.number">
+    <DESCRIPTION>
+     Number of observations contributing to G photometry
+    </DESCRIPTION>
+   </FIELD>
+   <FIELD ID="phot_bp_n_obs" datatype="int" name="phot_bp_n_obs" ucd="meta.number">
+    <DESCRIPTION>
+     Number of observations contributing to BP photometry
+    </DESCRIPTION>
+   </FIELD>
+   <FIELD ID="phot_rp_n_obs" datatype="int" name="phot_rp_n_obs" ucd="meta.number">
+    <DESCRIPTION>
+     Number of observations contributing to RP photometry
+    </DESCRIPTION>
+   </FIELD>
+   <FIELD ID="phot_g_mean_mag" datatype="float" name="phot_g_mean_mag" ucd="phot.mag;stat.mean;em.opt" unit="mag">
+    <DESCRIPTION>
+     G-band mean magnitude
+    </DESCRIPTION>
+   </FIELD>
+   <FIELD ID="phot_g_mean_flux_over_error" datatype="float" name="phot_g_mean_flux_over_error" ucd="arith.ratio">
+    <DESCRIPTION>
+     G-band mean flux divided by its error
+    </DESCRIPTION>
+   </FIELD>
+   <FIELD ID="phot_bp_mean_mag" datatype="float" name="phot_bp_mean_mag" ucd="phot.mag;stat.mean" unit="mag">
+    <DESCRIPTION>
+     Integrated BP mean magnitude
+    </DESCRIPTION>
+   </FIELD>
+   <FIELD ID="phot_bp_mean_flux_over_error" datatype="float" name="phot_bp_mean_flux_over_error" ucd="arith.ratio">
+    <DESCRIPTION>
+     Integrated BP mean flux divided by its error
+    </DESCRIPTION>
+   </FIELD>
+   <FIELD ID="phot_rp_mean_mag" datatype="float" name="phot_rp_mean_mag" ucd="phot.mag;stat.mean" unit="mag">
+    <DESCRIPTION>
+     Integrated RP mean magnitude
+    </DESCRIPTION>
+   </FIELD>
+   <FIELD ID="phot_rp_mean_flux_over_error" datatype="float" name="phot_rp_mean_flux_over_error" ucd="arith.ratio">
+    <DESCRIPTION>
+     Integrated RP mean flux divided by its error
+    </DESCRIPTION>
+   </FIELD>
+   <FIELD ID="astrometric_gof_al" datatype="float" name="astrometric_gof_al" ucd="stat.fit.goodness">
+    <DESCRIPTION>
+     Goodness of fit statistic of model wrt along-scan observations
+    </DESCRIPTION>
+   </FIELD>
+   <FIELD ID="astrometric_excess_noise" datatype="double" name="astrometric_excess_noise" ucd="stat.value" unit="mas">
+    <DESCRIPTION>
+     Excess noise of the source
+    </DESCRIPTION>
+   </FIELD>
+   <FIELD ID="astrometric_excess_noise_sig" datatype="double" name="astrometric_excess_noise_sig" ucd="stat.value">
+    <DESCRIPTION>
+     Significance of excess noise
+    </DESCRIPTION>
+   </FIELD>
+   <DATA>
+    <TABLEDATA>
+     <TR>
+      <TD>6633086851303261824</TD>
+      <TD>280.04926052929</TD>
+      <TD>-60.04450501278681</TD>
+      <TD>0.07862061315065796</TD>
+      <TD>0.08221886024903112</TD>
+      <TD>Gaia DR2 6633086851303261824</TD>
+      <TD>NOT_AVAILABLE</TD>
+      <TD>263</TD>
+      <TD>266</TD>
+      <TD>28</TD>
+      <TD>27</TD>
+      <TD>17.574652</TD>
+      <TD>976.93274</TD>
+      <TD>17.935923</TD>
+      <TD>100.12299</TD>
+      <TD>17.038633</TD>
+      <TD>132.02628</TD>
+      <TD>1.9517498</TD>
+      <TD>0.3208735304771628</TD>
+      <TD>1.703322229151045</TD>
+     </TR>
+     <TR>
+      <TD>6633086847005369088</TD>
+      <TD>280.0446767687665</TD>
+      <TD>-60.04829672239006</TD>
+      <TD>0.14324471250808138</TD>
+      <TD>0.15660203031613895</TD>
+      <TD>Gaia DR2 6633086847005369088</TD>
+      <TD>NOT_AVAILABLE</TD>
+      <TD>246</TD>
+      <TD>249</TD>
+      <TD>23</TD>
+      <TD>26</TD>
+      <TD>18.468699</TD>
+      <TD>493.7522</TD>
+      <TD>18.878082</TD>
+      <TD>43.55606</TD>
+      <TD>17.851986</TD>
+      <TD>65.08345</TD>
+      <TD>2.247862</TD>
+      <TD>0.5662981514947599</TD>
+      <TD>1.6952496073136964</TD>
+     </TR>
+     <TR>
+      <TD>6633086778285879680</TD>
+      <TD>280.0513552297008</TD>
+      <TD>-60.05537734380238</TD>
+      <TD>1.1136248918698595</TD>
+      <TD>0.8717916419660976</TD>
+      <TD>Gaia DR2 6633086778285879680</TD>
+      <TD>NOT_AVAILABLE</TD>
+      <TD>177</TD>
+      <TD>187</TD>
+      <TD>16</TD>
+      <TD>17</TD>
+      <TD>20.616322</TD>
+      <TD>97.520424</TD>
+      <TD>20.9107</TD>
+      <TD>7.0004096</TD>
+      <TD>19.74166</TD>
+      <TD>9.338541</TD>
+      <TD>1.2395936</TD>
+      <TD>1.0865853821882936</TD>
+      <TD>0.23315501590420296</TD>
+     </TR>
+    </TABLEDATA>
+   </DATA>
+  </TABLE>
+ </RESOURCE>
+</VOTABLE>

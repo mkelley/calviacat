@@ -74,7 +74,7 @@ class Catalog(ABC):
         if file_name is None:
             self.db = sqlite3.connect(':memory:')
         else:
-            self.db = sqlite3.connect(file_name)
+            self.db = sqlite3.connect(file_name, timeout=30)
 
         sqlite3.register_adapter(np.int64, int)
         sqlite3.register_adapter(np.int32, int)
