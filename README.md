@@ -1,21 +1,17 @@
 # calviacat v1.3.0
-Calibrate star photometry by comparison to a catalog.  PanSTARRS 1, ATLAS-RefCat2, SkyMapper and Gaia catalogs currently implemented.  Catalog queries are cached so that subsequent calibrations of the same or similar fields can be more quickly executed.
+Calibrate star photometry by comparison to a catalog.  PanSTARRS 1, ATLAS-RefCat2, SkyMapper, and Gaia catalogs currently implemented.  Catalog queries are cached so that subsequent calibrations of the same or similar fields can be more quickly executed.
 
 ## Attribution and license
 
 calviacat is written by Michael S. P. Kelley, with contributions from: Tim Lister.  It is licensed with the MIT License (see LICENSE for details).
-
-When traceability to this specific version is needed, cite:
-
-Kelley, Michael S. P. & Lister, Tim. 2021.  mkelley/calviacat: v1.2.0.  DOI: 10.5281/zenodo.5061298
-
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.5061298.svg)](https://doi.org/10.5281/zenodo.5061298)
 
 When one needs to cite the `calviacat` concept:
 
 Kelley, Michael S. P. & Lister, Tim. 2019.  mkelley/calviacat.  DOI: 10.5281/zenodo.2635840
 
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.2635840.svg)](https://doi.org/10.5281/zenodo.2635840)
+
+Otherwise, when traceability to a specific version is needed, select the DOI appropriate for the referenced version.  See the "Versions" section at the [Zenodo landing page](https://doi.org/10.5281/zenodo.2635840).
 
 ## Requirements
 
