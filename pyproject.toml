@@ -1,0 +1,37 @@
+[project]
+name = "calviacat"
+description = "Calibrate star photometry by comparison to a catalog."
+keywords = ["astronomy", "astrophysics", "space", "science"]
+readme = "README.md"
+authors = [
+    { name = "Michael S. P. Kelley", email = "msk@astro.umd.edu" },
+    { name = "Tim Lister", email = "tlister@lco.global" }
+]
+license = { text = "MIT" }
+requires-python = ">=3.8"
+dependencies = [
+    "astropy>=4.3",
+    "numpy",
+    "requests",
+    "astroquery>=0.4.5"
+]
+dynamic = [ "version" ]
+
+[project.urls]
+homepage = "https://github.com/mkelley/calviacat"
+
+[build-system]
+requires = [
+    "setuptools>=45",
+    "setuptools_scm[toml]>=6.2",
+    "wheel",
+]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools_scm]
+write_to = "calviacat/_version.py"
+
+[tool.setuptools]
+zip-safe = false
+
+[tool.setuptools.packages.find]
