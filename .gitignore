@@ -106,3 +106,4 @@ venv.bak/
 *~
 examples/lco.fits
 examples/cat.db
+calviacat/_version.py
