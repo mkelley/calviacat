@@ -89,6 +89,15 @@ class Gaia(Catalog):
                 'mag': f'_{f:}mag',
                 'err': f'_err_{f:}mag'
             }
+        if dr == 'edr3' or dr == 'dr3':
+            # Only (E)DR3 defines a G->z transformation
+            f = 'z'
+            filter2col[f] = {
+                'mag': f'_{f:}mag',
+                'err': f'_err_{f:}mag'
+            }
+            # Add extra columns to definition
+            COLUMN_DEFS += (('_zmag', 'FLOAT'), ('_err_zmag', 'FLOAT'),)
         gaia = TableDefinition('gaia', COLUMN_DEFS, 'source_id',
                                'ra', 'dec', filter2col)
         self.dr = dr
@@ -139,7 +148,7 @@ class Gaia(Catalog):
         # Compute mag. errors from fluxes
         tab = self._add_mag_errors(tab)
 
-        # Transform Gaia magnitudes into SDSS g, r, i ones
+        # Transform Gaia magnitudes into SDSS g, r, i, z ones
         tab = self._transform_filters(tab)
         self.logger.debug('Updating {} with {} sources.'.format(
             self.table.name, len(tab)))
@@ -164,7 +173,7 @@ class Gaia(Catalog):
         return tab
 
     def _transform_filters(self, tab):
-        """Transform the Gaia G, G_BP, G_RP magnitudes to SDSS g, r, i
+        """Transform the Gaia G, G_BP, G_RP magnitudes to SDSS g, r, i, (potentially z)
         using the equations in Table 5.7 of (DR2)
         https://gea.esac.esa.int/archive/documentation/GDR2/Data_processing/chap_cu5pho/sec_cu5pho_calibr/ssec_cu5pho_PhotTransf.html
         and Table 5.6 of (EDR3)
@@ -198,6 +207,9 @@ class Gaia(Catalog):
             i_sdss = g - (-0.293 + 0.6404*(bp-rp) -
                           0.09609*(bp-rp)**2 - 0.002104*(bp-rp)**3)
             e_i_sdss = np.sqrt(e_g**2 + 0.04092**2)
+            z_sdss = g - (-0.4619 + 0.8992*(bp-rp) -
+                          0.08271*(bp-rp)**2 + 0.005029*(bp-rp)**3)
+            e_z_sdss = np.sqrt(e_g**2 + 0.041161**2)
         else:
             raise ValueError("Transformations not defined yet for other than DR2 and EDR3/DR3")
 
@@ -212,6 +224,11 @@ class Gaia(Catalog):
         tab.add_column(Column(data=i_sdss, name='_imag',
                                     unit=u.mag))
         tab.add_column(Column(data=e_i_sdss, name='_err_imag',
+                                    unit=u.mag))
+        if self.dr == 'edr3' or self.dr == 'dr3':
+            tab.add_column(Column(data=z_sdss, name='_zmag',
+                                    unit=u.mag))
+            tab.add_column(Column(data=e_z_sdss, name='_err_zmag',
                                     unit=u.mag))
         return tab
 

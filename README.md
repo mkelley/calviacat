@@ -1,4 +1,4 @@
-# calviacat v1.3.1
+# calviacat v1.3.2
 Calibrate star photometry by comparison to a catalog.  PanSTARRS 1, ATLAS-RefCat2, SkyMapper, and Gaia catalogs currently implemented.  Catalog queries are cached so that subsequent calibrations of the same or similar fields can be more quickly executed.
 
 ## Attribution and license
@@ -99,4 +99,4 @@ Data Processing and Analysis Consortium ([DPAC](https://www.cosmos.esa.int/web/g
   * Gaia Collaboration et al. ([2021](https://doi.org/10.1051/0004-6361/202039657)) *Gaia Early Data Release 3. Summary of the contents and survey properties*
 * Gaia DR3:
   * Gaia Collaboration et al. ([2016](http://dx.doi.org/10.1051/0004-6361/201629272)) *The Gaia mission*
-  * Gaia Collaboration et al. (2022, in prep.) *Gaia DR3. data release content and main properties*
+  * Gaia Collaboration et al. ([2022](https://doi.org/10.1051/0004-6361/202243940)) *Gaia Data Release 3. Summary of the content and survey properties*
