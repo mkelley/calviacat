@@ -136,7 +136,7 @@ class SkyMapper(Catalog):
         self.dr = dr
         super().__init__(dbfile, skym, max_records=max_records, **kwargs)
 
-    def fetch_field(self, ra: float, dec: float, sr: float) -> None:
+    def _fetch_field(self, ra: float, dec: float, sr: float) -> None:
         self.logger.debug(
             (
                 "Fetching SkyMapper catalog from ASVO over {:.2g}" " field-of-view."

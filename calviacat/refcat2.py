@@ -87,7 +87,7 @@ class RefCat2(Catalog):
         self.credentials['userid'] = wsid
         self.credentials['password'] = password
 
-    def fetch_field(self, ra: float, dec: float, sr: float) -> None:
+    def _fetch_field(self, ra: float, dec: float, sr: float) -> None:
         name = 'calviacat_{}'.format(
             ''.join(random.choices(string.ascii_uppercase, k=5)))
 
