@@ -136,22 +136,7 @@ class SkyMapper(Catalog):
         self.dr = dr
         super().__init__(dbfile, skym, max_records=max_records, **kwargs)
 
-    def fetch_field(self, sources, scale=1.25):
-        """Fetch catalog sources for this field and save to database.
-
-        Search radius and center are derived from the source list.
-
-        Parameters
-        ----------
-        sources : SkyCoord
-            Sources to be matched.
-
-        scale : float, optional
-            Search radius scale factor.
-
-        """
-        sr = max((sources.separation(c).max() for c in sources)) * scale / 2
-
+    def fetch_field(self, ra: float, dec: float, sr: float) -> None:
         self.logger.debug(
             (
                 "Fetching SkyMapper catalog from ASVO over {:.2g}" " field-of-view."
@@ -169,9 +154,9 @@ class SkyMapper(Catalog):
             dr=self.dr,
             max=self.max_records,
             columns=",".join(self.table.columns),
-            ra=np.mean(sources.ra.deg),
-            dec=np.mean(sources.dec.deg),
-            sr=sr.deg,
+            ra=ra,
+            dec=dec,
+            sr=sr,
         )
 
         skym = vo.dal.TAPService("https://api.skymapper.nci.org.au/public/tap")

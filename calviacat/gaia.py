@@ -95,22 +95,7 @@ class Gaia(Catalog):
         self.gaia_table = table_mapping.get(dr.lower, table_mapping['dr2'])
         super().__init__(dbfile, gaia, max_records=max_records, **kwargs)
 
-    def fetch_field(self, sources, scale=1.25):
-        """Fetch catalog sources for this field and save to database.
-
-        Search radius and center are derived from the source list.
-
-        Parameters
-        ----------
-        sources : SkyCoord
-            Sources to be matched.
-
-        scale : float, optional
-            Search radius scale factor.
-
-        """
-        sr = max((sources.separation(c).max() for c in sources)) * scale / 2
-
+    def _fetch_field(self, ra: float, dec: float, sr: float) -> None:
         self.logger.debug(
             ('Fetching Gaia {} catalog from ESA over {:.2g}'
              ' field-of-view.').format(self.dr.upper(), sr))
@@ -126,11 +111,10 @@ class Gaia(Catalog):
             table=self.gaia_table,
             max=self.max_records,
             columns=','.join([col for col in self.table.columns if col[0] != '_']),
-            ra=np.mean(sources.ra.deg),
-            dec=np.mean(sources.dec.deg),
-            sr=sr.deg
+            ra=ra,
+            dec=dec,
+            sr=sr
         )
-        # self.logger.debug(q)
 
         gaia = TapPlus(url='https://gea.esac.esa.int/', server_context='tap-server', tap_context='tap')
         job = gaia.launch_job(q)

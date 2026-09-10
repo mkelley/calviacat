@@ -92,65 +92,20 @@ class PanSTARRS1(Catalog):
                               'ramean', 'decmean', filter2col)
         super().__init__(dbfile, ps1, **kwargs)
 
-    def fetch_field(self, sources, scale=1.25, radius=0.5):
-        """Fetch catalog sources for this field and save to database.
-
-        Search radius and center are derived from the source list if
-        len(sources) > 1 or from the first entry and radius if there is only
-        a single source.
-
-        Parameters
-        ----------
-        sources : SkyCoord or tuple of (RA center, Dec center) as angle Quantities
-                  or in degrees.
-            Sources to be matched or center to search around.
-
-        scale : float, optional
-            Search radius scale factor.
-
-        radius: float or Quantity, optional, default=0.5
-            Search radius in degrees or a Quantity that can be transformed
-            to degrees (`scale` is not applied)
-        """
-
-        if type(sources) == SkyCoord:
-            try:
-                sr = max((sources.separation(c).max() for c in sources)) * scale / 2
-                sr = sr.to(u.deg).value
-                ra_center = sources.ra.mean().deg
-                dec_center = sources.dec.mean().deg
-            except TypeError:
-                # single center position given
-                ra_center = sources.ra.deg
-                dec_center = sources.dec.deg
-                try:
-                    sr = radius.to(u.deg).value
-                except AttributeError:
-                    sr = radius
-        elif type(sources) == tuple:
-            ra_center = sources[0]
-            dec_center = sources[1]
-            try:
-                ra_center = ra_center.to(u.deg).value
-                dec_center = dec_center.to(u.deg).value
-            except AttributeError:
-                self.logger.debug("Assuming coordinates are in degrees already")
-                pass
-            except u.UnitConversionError:
-                self.logger.error(("Could not convert {} to center coordinates".format(sources)))
-            try:
-                sr = radius.to(u.deg).value
-            except AttributeError:
-                sr = radius
+    def _fetch_field(self, ra: float, dec: float, sr: float) -> None:
         self.logger.debug(
-            ('Fetching PS1 catalog from STScI over {:.2g} deg field-of-view.')
-            .format(sr))
+            f"Fetching PS1 catalog from STScI over {sr:.2f} deg field-of-view."
+        )
 
-        params = dict(RA=ra_center, DEC=dec_center, SR=sr,
-                      max_records=self.max_records,
-                      ordercolumn1='ndetections',
-                      descending1='on',
-                      selectedColumnsCsv=','.join(self.table.columns))
+        params = {
+            'RA': ra,
+            'DEC': dec,
+            'SR': sr,
+            'max_records': self.max_records,
+            'ordercolumn1': 'ndetections',
+            'descending1': 'on',
+            'selectedColumnsCsv': ','.join(self.table.columns)
+        }
 
         q = requests.get('https://archive.stsci.edu/panstarrs/search.php',
                          params=params)
@@ -162,8 +117,7 @@ class PanSTARRS1(Catalog):
                 self.logger.error(q.text)
                 return
 
-        self.logger.debug('Updating {} with {} sources.'.format(
-            self.table.name, len(tab)))
+        self.logger.debug(f"Updating {self.table.name} with {len(tab)} sources.")
 
         self.db.executemany('''
         INSERT OR IGNORE INTO {}
