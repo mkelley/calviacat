@@ -155,7 +155,7 @@ class Catalog(ABC):
         dec = float(np.mean(center.dec.deg))
 
         if len(center) > 1 and radius is None:
-            sr = float(max(center.separation(c).max() for c in center) * scale / 2)
+            sr = float(max(center.separation(c).max().deg for c in center) * scale / 2)
         elif radius is None:
             raise ValueError("radius is required when center is a single coordinate")
         else:
