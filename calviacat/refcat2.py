@@ -87,22 +87,7 @@ class RefCat2(Catalog):
         self.credentials['userid'] = wsid
         self.credentials['password'] = password
 
-    def fetch_field(self, sources, scale=1.25):
-        """Fetch catalog sources for this field and save to database.
-
-        Search radius and center are derived from the source list.
-
-        Parameters
-        ----------
-        sources : SkyCoord
-            Sources to be matched.
-
-        scale : float, optional
-            Search radius scale factor.
-
-        """
-        sr = max((sources.separation(c).max() for c in sources)) * scale / 2
-
+    def _fetch_field(self, ra: float, dec: float, sr: float) -> None:
         name = 'calviacat_{}'.format(
             ''.join(random.choices(string.ascii_uppercase, k=5)))
 
@@ -121,15 +106,14 @@ class RefCat2(Catalog):
             max=self.max_records,
             columns='r.{}'.format(',r.'.join(self.table.columns)),
             name=name,
-            ra=np.mean(sources.ra.deg),
-            dec=np.mean(sources.dec.deg),
-            sr=sr.deg
+            ra=ra,
+            dec=dec,
+            sr=sr
         )
 
         job = MastCasJobs(context="HLSP_ATLAS_REFCAT2", **self.credentials)
         jobid = job.submit(q, task_name=('calviacat refcat2 cone search {:.5f} {:.5f}'
-                                         .format(np.mean(sources.ra.deg),
-                                                 np.mean(sources.dec.deg))))
+                                         .format(ra, dec)))
         status = job.monitor(jobid)
         if status[0] in (3, 4):
             raise CasJobsFailed('status={}, {}'.format(status[0], status[1]))
