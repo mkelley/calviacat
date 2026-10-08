@@ -121,21 +121,51 @@ class Catalog(ABC):
         END'''.format(table=self.table.name, objid=self.table.objid,
                       ra=self.table.ra, dec=self.table.dec))
 
-    @abstractmethod
-    def fetch_field(self, sources, scale=1.25):
-        """Fetch catalog sources for this field and save to database.
+    def fetch_field(self,
+                    center: SkyCoord,
+                    radius: u.Quantity[u.physical.angle] | None = None,
+                    scale: float=1.25) -> None:
+        """Fetch catalog sources and save to database.
 
-        Search radius and center are derived from the source list.
+        Search radius and center may be derived from the source list.
+
 
         Parameters
         ----------
-        sources : SkyCoord
-            Sources to be matched.
+        center : SkyCoord
+            The center of the region to query, or a list of sources that define
+            the region.  For a list, the center of the search radius is the
+            average RA, Dec, and the radius is half the maximum separation
+            between coordinates multiplied by ``scale``. If the source list is a
+            single coordinate, then ``radius`` will be used as an alternative.
+            The coordinates should be in the same reference frame as the
+            catalog.
+
+        radius : Quantity, optional
+            Catalog query radius.  If defined, it overrides the calculated query
+            radius (see ``center``).  Required if center is a single coordinate.
 
         scale : float, optional
-            Search radius scale factor.
+            Increase the calculated query radius by this factor.
 
         """
+
+        # query center is a straight mean
+        ra = float(np.mean(center.ra.deg))
+        dec = float(np.mean(center.dec.deg))
+
+        if len(center) > 1 and radius is None:
+            sr = float(max(center.separation(c).max().deg for c in center) * scale / 2)
+        elif radius is None:
+            raise ValueError("radius is required when center is a single coordinate")
+        else:
+            sr = float(u.Quantity(radius, "deg").value())
+
+        return self._fetch_field(ra, dec, sr)
+
+    @abstractmethod
+    def _fetch_field(self, ra: float, dec: float, sr: float) -> None:
+        """Parameters are RA, Dec, and search radius in units of degrees."""
         pass
 
     def search(self, sources):
