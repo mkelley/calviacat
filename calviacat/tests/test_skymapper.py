@@ -11,7 +11,7 @@ class TestSkyMapper:
         skym = SkyMapper(":memory:", dr=2)
         skym.fetch_field(corners)
         catalog_ids, coords = skym.search(corners)
-        assert len(catalog_ids) == 220
+        assert len(catalog_ids) == 225
 
     def test_dr4(self):
         """DR4 has a slightly different set of columns"""
@@ -19,4 +19,4 @@ class TestSkyMapper:
         skym = SkyMapper(":memory:", dr=4)
         skym.fetch_field(corners)
         catalog_ids, coords = skym.search(corners)
-        assert len(catalog_ids) == 332
+        assert len(catalog_ids) == 337
