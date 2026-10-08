@@ -1,12 +1,14 @@
 # Licensed with the MIT License, see LICENSE for details
 
 import os
-import requests
-import numpy as np
+
 import matplotlib.pyplot as plt
-from astropy.table import Table
-from astropy.io import fits
+import numpy as np
+import requests
 from astropy.coordinates import SkyCoord
+from astropy.io import fits
+from astropy.table import Table
+
 import calviacat as cvc
 
 if os.path.exists("lco.fits"):

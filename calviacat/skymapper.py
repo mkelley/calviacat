@@ -2,9 +2,9 @@
 
 __all__ = ["SkyMapper"]
 
-from copy import copy
 import numpy as np
 import pyvo as vo
+
 from .catalog import Catalog, TableDefinition
 
 # column names and SQLite type
@@ -138,9 +138,9 @@ class SkyMapper(Catalog):
 
     def _fetch_field(self, ra: float, dec: float, sr: float) -> None:
         self.logger.debug(
-            (
-                "Fetching SkyMapper catalog from ASVO over {:.2g}" " field-of-view."
-            ).format(sr)
+            ("Fetching SkyMapper catalog from ASVO over {:.2g} field-of-view.").format(
+                sr
+            )
         )
 
         query = """
@@ -170,9 +170,7 @@ class SkyMapper(Catalog):
             """
         INSERT OR IGNORE INTO {}
           VALUES({})
-        """.format(
-                self.table.name, ",".join("?" * len(self.table.columns))
-            ),
+        """.format(self.table.name, ",".join("?" * len(self.table.columns))),
             self._masked_to_null(tab),
         )
         self.db.commit()
