@@ -3,11 +3,10 @@
 __all__ = ["PanSTARRS1"]
 
 import io
+
 import requests
-import numpy as np
 from astropy.io import votable
-from astropy.coordinates import SkyCoord
-import astropy.units as u
+
 from .catalog import Catalog, TableDefinition
 
 # column names and SQLite type
@@ -110,7 +109,7 @@ class PanSTARRS1(Catalog):
         with io.BytesIO(q.text.encode()) as xml:
             try:
                 tab = votable.parse_single_table(xml).to_table()
-            except Exception as e:
+            except Exception:
                 self.logger.error(q.text)
                 return
 

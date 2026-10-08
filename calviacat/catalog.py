@@ -1,24 +1,23 @@
 # Licensed with the MIT License, see LICENSE for details
 
-__all__ = [
-    'Catalog'
-]
+__all__ = ["Catalog"]
 
 import logging
 import sqlite3
 from abc import ABC, abstractmethod
 
-import numpy as np
 import astropy.units as u
+import numpy as np
 from astropy.coordinates import SkyCoord
-from astropy.stats import sigma_clipped_stats, sigma_clip
-from astropy.modeling import models, fitting
+from astropy.modeling import fitting, models
+from astropy.stats import sigma_clip, sigma_clipped_stats
 
 try:
     from astropy.version import version_info as astropy_version
 except ImportError:
     import astropy.version
-    astropy_version = [int(x) for x in astropy.version.version.split('.')]
+
+    astropy_version = [int(x) for x in astropy.version.version.split(".")]
 
 
 class CalibrationError(Exception):
@@ -26,8 +25,7 @@ class CalibrationError(Exception):
 
 
 class TableDefinition:
-    def __init__(self, name, column_definitions, objid, ra, dec,
-                 filter2col):
+    def __init__(self, name, column_definitions, objid, ra, dec, filter2col):
         self.name = name
         self.column_definitions = column_definitions
         self.objid = objid
@@ -41,10 +39,15 @@ class TableDefinition:
 
 
 class Catalog(ABC):
-    def __init__(self, dbfile, table, logger=None,
-                 max_records=3000, match_limit=1.5 * u.arcsec,
-                 min_matches=10):
-
+    def __init__(
+        self,
+        dbfile,
+        table,
+        logger=None,
+        max_records=3000,
+        match_limit=1.5 * u.arcsec,
+        min_matches=10,
+    ):
         if logger is None:
             self.logger = logging.getLogger(__name__)
             self.logger.setLevel(logging.DEBUG)
@@ -72,7 +75,7 @@ class Catalog(ABC):
         """
 
         if file_name is None:
-            self.db = sqlite3.connect(':memory:')
+            self.db = sqlite3.connect(":memory:")
         else:
             self.db = sqlite3.connect(file_name, timeout=30)
 
@@ -81,27 +84,31 @@ class Catalog(ABC):
         sqlite3.register_adapter(np.float64, float)
         sqlite3.register_adapter(np.float32, float)
 
-        self.db.create_function('SIN', 1, np.sin)
-        self.db.create_function('COS', 1, np.cos)
+        self.db.create_function("SIN", 1, np.sin)
+        self.db.create_function("COS", 1, np.cos)
 
-        defs = ',\n  '.join(['{} {}'.format(*c)
-                             for c in self.table.column_definitions])
-        self.db.execute('''
+        defs = ",\n  ".join(["{} {}".format(*c) for c in self.table.column_definitions])
+        self.db.execute(
+            """
         CREATE TABLE IF NOT EXISTS
         {}(
           {}
-        )'''.format(self.table.name, defs))
+        )""".format(self.table.name, defs)
+        )
 
-        self.db.execute('''
+        self.db.execute(
+            """
         CREATE VIRTUAL TABLE IF NOT EXISTS
         {}_skytree USING RTREE(
           {} INTEGER PRIMARY KEY,
           x0 FLOAT, x1 FLOAT,
           y0 FLOAT, y1 FLOAT,
           z0 FLOAT, z1 FLOAT
-        )'''.format(self.table.name, self.table.objid))
+        )""".format(self.table.name, self.table.objid)
+        )
 
-        self.db.execute('''
+        self.db.execute(
+            """
         CREATE TRIGGER IF NOT EXISTS
         {table}_insert AFTER INSERT ON {table}
         BEGIN
@@ -118,13 +125,20 @@ class Catalog(ABC):
             SIN(new.{dec} * 0.017453292519943295),
             SIN(new.{dec} * 0.017453292519943295)
           );
-        END'''.format(table=self.table.name, objid=self.table.objid,
-                      ra=self.table.ra, dec=self.table.dec))
+        END""".format(
+                table=self.table.name,
+                objid=self.table.objid,
+                ra=self.table.ra,
+                dec=self.table.dec,
+            )
+        )
 
-    def fetch_field(self,
-                    center: SkyCoord,
-                    radius: u.Quantity[u.physical.angle] | None = None,
-                    scale: float=1.25) -> None:
+    def fetch_field(
+        self,
+        center: SkyCoord,
+        radius: u.Quantity[u.physical.angle] | None = None,
+        scale: float = 1.25,
+    ) -> None:
         """Fetch catalog sources and save to database.
 
         Search radius and center may be derived from the source list.
@@ -191,23 +205,28 @@ class Catalog(ABC):
         dec = sources.dec.rad
         mean_ra = np.mean(ra)
         mean_dec = np.mean(dec)
-        mean_xyz = (np.cos(mean_dec) * np.cos(mean_ra),
-                    np.cos(mean_dec) * np.sin(mean_ra),
-                    np.sin(mean_dec))
-        xyz = np.array((np.cos(dec) * np.cos(ra),
-                        np.cos(dec) * np.sin(ra),
-                        np.sin(dec)))
+        mean_xyz = (
+            np.cos(mean_dec) * np.cos(mean_ra),
+            np.cos(mean_dec) * np.sin(mean_ra),
+            np.sin(mean_dec),
+        )
+        xyz = np.array(
+            (np.cos(dec) * np.cos(ra), np.cos(dec) * np.sin(ra), np.sin(dec))
+        )
 
         # expand the box to accommodate the object match radius
         delta = np.sin(self.match_limit * 2).value
-        box = (max(xyz[0].max(), mean_xyz[0]) + delta,
-               min(xyz[0].min(), mean_xyz[0]) - delta,
-               max(xyz[1].max(), mean_xyz[1]) + delta,
-               min(xyz[1].min(), mean_xyz[1]) - delta,
-               max(xyz[2].max(), mean_xyz[2]) + delta,
-               min(xyz[2].min(), mean_xyz[2]) - delta)
+        box = (
+            max(xyz[0].max(), mean_xyz[0]) + delta,
+            min(xyz[0].min(), mean_xyz[0]) - delta,
+            max(xyz[1].max(), mean_xyz[1]) + delta,
+            min(xyz[1].min(), mean_xyz[1]) - delta,
+            max(xyz[2].max(), mean_xyz[2]) + delta,
+            min(xyz[2].min(), mean_xyz[2]) - delta,
+        )
 
-        rows = self.db.execute('''
+        rows = self.db.execute(
+            """
         SELECT {objid},{ra},{dec} FROM {table}
         INNER JOIN {table}_skytree USING ({objid})
         WHERE x0 < ?
@@ -216,15 +235,20 @@ class Catalog(ABC):
           AND y1 > ?
           AND z0 < ?
           AND z1 > ?
-        '''.format(table=self.table.name, objid=self.table.objid,
-                   ra=self.table.ra, dec=self.table.dec), box
+        """.format(
+                table=self.table.name,
+                objid=self.table.objid,
+                ra=self.table.ra,
+                dec=self.table.dec,
+            ),
+            box,
         ).fetchall()
 
         if len(rows) == 0:
-            return [], SkyCoord([], [], unit='deg')
+            return [], SkyCoord([], [], unit="deg")
 
         objids, ra, dec = [np.array(x) for x in zip(*rows)]
-        cat = SkyCoord(ra, dec, unit='deg')
+        cat = SkyCoord(ra, dec, unit="deg")
         return objids, cat
 
     def xmatch(self, sources):
@@ -249,7 +273,7 @@ class Catalog(ABC):
         objids, cat = self.search(sources)
 
         if len(cat) == 0:
-            self.logger.error('No catalog sources to match.')
+            self.logger.error("No catalog sources to match.")
             return
 
         idx, d2d = sources.match_to_catalog_sky(cat)[:2]
@@ -257,11 +281,11 @@ class Catalog(ABC):
         n = i.sum()
         if n < self.min_matches:
             self.logger.error(
-                'Fewer than {} sources matched: {}.'.format(self.min_matches, n))
+                "Fewer than {} sources matched: {}.".format(self.min_matches, n)
+            )
             return
 
-        self.logger.info(
-            'Matched {} sources to photometric catalog.'.format(n))
+        self.logger.info("Matched {} sources to photometric catalog.".format(n))
 
         matched = np.ma.MaskedArray(objids[idx], int)
         matched.mask = ~i
@@ -293,25 +317,17 @@ class Catalog(ABC):
 
         """
 
-        statement = '''
+        statement = """
         SELECT {columns} from {table}
         WHERE {objid}=?
-        '''.format(columns=columns, table=self.table.name,
-                   objid=self.table.objid)
+        """.format(columns=columns, table=self.table.name, objid=self.table.objid)
 
         rows = []
-        for i, objid in enumerate(objids):
+        for objid in objids:
             if objid is np.ma.masked or objid is None:
                 row = []
             else:
-                row = self.db.execute('''
-                SELECT {columns} FROM {table}
-                WHERE {objid}=?
-                '''.format(
-                    objid=self.table.objid,
-                    table=self.table.name,
-                    columns=columns
-                ), [objid]).fetchone()
+                row = self.db.execute(statement, [objid]).fetchone()
 
             if None in row and not allow_null:
                 rows.append([])
@@ -320,8 +336,7 @@ class Catalog(ABC):
 
         return rows
 
-    def cal_constant(self, matched, m_inst, filt, mlim=[14, 18],
-                     gmi_lim=None):
+    def cal_constant(self, matched, m_inst, filt, mlim=[14, 18], gmi_lim=None):
         """Estimate calibration constant without color correction.
 
         Parameters
@@ -356,8 +371,9 @@ class Catalog(ABC):
         """
 
         if filt not in self.table.filter2col:
-            raise ValueError('Filter must be one of {}.'.format(
-                self.table.filter2col.keys()))
+            raise ValueError(
+                "Filter must be one of {}.".format(self.table.filter2col.keys())
+            )
 
         if gmi_lim is None:
             limits = [-np.inf, np.inf, min(mlim), max(mlim)]
@@ -366,27 +382,33 @@ class Catalog(ABC):
 
         columns = ("{filt[mag]},{filt[err]},{g[mag]}-{i[mag]}").format(
             filt=self.table.filter2col[filt],
-            g=self.table.filter2col['g'],
-            i=self.table.filter2col['i'])
+            g=self.table.filter2col["g"],
+            i=self.table.filter2col["i"],
+        )
         cat = self.lookup(matched, columns)
 
-        m = np.ma.MaskedArray(np.zeros(len(matched)),
-                              mask=np.ones(len(matched), bool))
+        m = np.ma.MaskedArray(np.zeros(len(matched)), mask=np.ones(len(matched), bool))
         gmi = np.zeros_like(m.data)
         for i in range(len(cat)):
             if len(cat[i]) > 0:
                 m[i], merr, gmi[i] = cat[i]
-                if all((gmi[i] >= limits[0], gmi[i] <= limits[1],
-                        m[i] >= limits[2], m[i] <= limits[3],
-                        m[i] / merr > 2)):
+                if all(
+                    (
+                        gmi[i] >= limits[0],
+                        gmi[i] <= limits[1],
+                        m[i] >= limits[2],
+                        m[i] <= limits[3],
+                        m[i] / merr > 2,
+                    )
+                ):
                     m.mask[i] = False
                 else:
                     m.mask[i] = True
 
         if np.all(m.mask):
             raise CalibrationError(
-                'No data returned from database.  Check `matched` and catalog '
-                'coverage of requested field.'
+                "No data returned from database.  Check `matched` and catalog "
+                "coverage of requested field."
             )
 
         dm = m - m_inst
@@ -394,8 +416,9 @@ class Catalog(ABC):
         mms = sigma_clipped_stats(dm[i])
         return mms[0], mms[1], mms[2], m, gmi
 
-    def cal_color(self, matched, m_inst, filt, color, C=None,
-                  mlim=[14, 18], gmi_lim=[0.2, 3.0]):
+    def cal_color(
+        self, matched, m_inst, filt, color, C=None, mlim=[14, 18], gmi_lim=[0.2, 3.0]
+    ):
         """Estimate calibration constant with color correction.
 
         Parameters
@@ -437,34 +460,42 @@ class Catalog(ABC):
         """
 
         if filt not in self.table.filter2col:
-            raise ValueError('Filter must be one of {}.'.format(
-                self.table.filter2col.keys()))
+            raise ValueError(
+                "Filter must be one of {}.".format(self.table.filter2col.keys())
+            )
 
-        blue, red = color.split('-')
+        blue, red = color.split("-")
         if gmi_lim is None:
             limits = [-np.inf, np.inf, min(mlim), max(mlim)]
         else:
             limits = [min(gmi_lim), max(gmi_lim), min(mlim), max(mlim)]
 
-        columns = ("{filt[mag]},{filt[err]},{b[mag]}-{r[mag]},"
-                   "{g[mag]}-{i[mag]}").format(
-                       filt=self.table.filter2col[filt],
-                       b=self.table.filter2col[blue],
-                       r=self.table.filter2col[red],
-                       g=self.table.filter2col['g'],
-                       i=self.table.filter2col['i'])
+        columns = (
+            "{filt[mag]},{filt[err]},{b[mag]}-{r[mag]},{g[mag]}-{i[mag]}"
+        ).format(
+            filt=self.table.filter2col[filt],
+            b=self.table.filter2col[blue],
+            r=self.table.filter2col[red],
+            g=self.table.filter2col["g"],
+            i=self.table.filter2col["i"],
+        )
         cat = self.lookup(matched, columns)
 
-        m = np.ma.MaskedArray(np.zeros(len(matched)),
-                              mask=np.ones(len(matched), bool))
+        m = np.ma.MaskedArray(np.zeros(len(matched)), mask=np.ones(len(matched), bool))
         gmi = np.zeros_like(m.data)
         cindex = m.copy()
         for i in range(len(cat)):
             if len(cat[i]) > 0:
                 m[i], merr, cindex[i], gmi[i] = cat[i]
-                if all((gmi[i] >= limits[0], gmi[i] <= limits[1],
-                        m[i] >= limits[2], m[i] <= limits[3],
-                        m[i] / merr > 2)):
+                if all(
+                    (
+                        gmi[i] >= limits[0],
+                        gmi[i] <= limits[1],
+                        m[i] >= limits[2],
+                        m[i] <= limits[3],
+                        m[i] / merr > 2,
+                    )
+                ):
                     m.mask[i] = False
                     cindex.mask[i] = False
                 else:
@@ -473,8 +504,8 @@ class Catalog(ABC):
 
         if np.all(m.mask):
             raise CalibrationError(
-                'No data returned from database.  Check `matched` and catalog '
-                'coverage of requested field.'
+                "No data returned from database.  Check `matched` and catalog "
+                "coverage of requested field."
             )
         dm = m - m_inst
 
@@ -484,14 +515,16 @@ class Catalog(ABC):
             model.slope.fixed = True
 
         fitter = fitting.FittingWithOutlierRemoval(
-            fitting.LinearLSQFitter(), sigma_clip)
+            fitting.LinearLSQFitter(), sigma_clip
+        )
 
         i = np.isfinite(dm) * ~dm.mask
         if sum(i) == 0:
-            raise CalibrationError('All sources masked.')
+            raise CalibrationError("All sources masked.")
 
-        if (astropy_version[0] > 3 or
-                (astropy_version[0] == 3 and astropy_version[1] >= 1)):
+        if astropy_version[0] > 3 or (
+            astropy_version[0] == 3 and astropy_version[1] >= 1
+        ):
             # Return order changed in astropy 3.1
             # (http://docs.astropy.org/en/stable/changelog.html#id10)
             # Also now returns a boolean mask array rather than a
