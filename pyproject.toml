@@ -10,8 +10,8 @@ authors = [
 license = { text = "MIT" }
 requires-python = ">=3.11"
 dependencies = [
-    "astropy>=4.3",
-    "numpy",
+    "astropy>=6.1",
+    "numpy>=2",
     "requests",
     "astroquery>=0.4.5",
     "pyvo>=1.5"
@@ -21,10 +21,14 @@ dynamic = [ "version" ]
 [project.urls]
 homepage = "https://github.com/mkelley/calviacat"
 
+[project.optional-dependencies]
+dev = ["build", "pre-commit", "ruff"]
+test = ["pytest", "pytest-remotedata", "pytest-cov", "tox"]
+
 [build-system]
 requires = [
-    "setuptools>=45",
-    "setuptools_scm[toml]>=6.2",
+    "setuptools>=80",
+    "setuptools_scm[toml]>=8",
     "wheel",
 ]
 build-backend = "setuptools.build_meta"
@@ -36,3 +40,15 @@ write_to = "calviacat/_version.py"
 zip-safe = false
 
 [tool.setuptools.packages.find]
+
+[tool.ruff]
+line-length = 88
+lint.select = [
+    "E", # pycodestyle errors
+    "W", # pycodestyle warnings
+    "F", # pyflakes. "E" + "W" + "F" + "C90" (mccabe complexity) is equivalent to flake8
+    "I", # isort
+]
+
+[tool.pytest.ini_options]
+addopts = "--cov=calviacat --cov-report=term-missing"
