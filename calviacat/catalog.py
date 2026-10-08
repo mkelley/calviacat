@@ -197,12 +197,15 @@ class Catalog(ABC):
         xyz = np.array((np.cos(dec) * np.cos(ra),
                         np.cos(dec) * np.sin(ra),
                         np.sin(dec)))
-        box = (max(xyz[0].max(), mean_xyz[0]),
-               min(xyz[0].min(), mean_xyz[0]),
-               max(xyz[1].max(), mean_xyz[1]),
-               min(xyz[1].min(), mean_xyz[1]),
-               max(xyz[2].max(), mean_xyz[2]),
-               min(xyz[2].min(), mean_xyz[2]))
+
+        # expand the box to accommodate the object match radius
+        delta = np.sin(self.match_limit * 2).value
+        box = (max(xyz[0].max(), mean_xyz[0]) + delta,
+               min(xyz[0].min(), mean_xyz[0]) - delta,
+               max(xyz[1].max(), mean_xyz[1]) + delta,
+               min(xyz[1].min(), mean_xyz[1]) - delta,
+               max(xyz[2].max(), mean_xyz[2]) + delta,
+               min(xyz[2].min(), mean_xyz[2]) - delta)
 
         rows = self.db.execute('''
         SELECT {objid},{ra},{dec} FROM {table}
