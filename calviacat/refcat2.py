@@ -2,6 +2,7 @@
 
 __all__ = ["RefCat2"]
 
+import os
 import random
 import string
 
@@ -69,11 +70,17 @@ class RefCat2(Catalog):
         filter2col = {}
         for f in "griz":
             filter2col[f] = {"mag": f, "err": "d{}".format(f)}
-        skym = TableDefinition("refcat2", COLUMN_DEFS, "objid", "RA", "Dec", filter2col)
-        super().__init__(dbfile, skym, max_records=max_records, **kwargs)
+        rc2table = TableDefinition(
+            "refcat2", COLUMN_DEFS, "objid", "RA", "Dec", filter2col
+        )
+        super().__init__(dbfile, rc2table, max_records=max_records, **kwargs)
         self.credentials = {}
-        self.credentials["userid"] = wsid
-        self.credentials["password"] = password
+        self.credentials["userid"] = (
+            os.environ.get("CASJOBS_WSID") if wsid is None else wsid
+        )
+        self.credentials["password"] = (
+            os.environ.get("CASJOBS_PW") if password is None else password
+        )
 
     def _fetch_field(self, ra: float, dec: float, sr: float) -> None:
         name = "calviacat_{}".format(

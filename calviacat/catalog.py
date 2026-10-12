@@ -195,7 +195,7 @@ class Catalog(ABC):
         """Parameters are RA, Dec, and search radius in units of degrees."""
         pass
 
-    def search(self, sources):
+    def search(self, sources: SkyCoord) -> tuple[np.ndarray, SkyCoord]:
         """Search catalog for objects near sources.
 
         Parameters
