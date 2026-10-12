@@ -69,6 +69,7 @@ class Catalog(ABC):
     def _open_db(self, file_name):
         """Open and, if needed, initialize database.
 
+
         Parameters
         ----------
         file_name : string
@@ -198,6 +199,7 @@ class Catalog(ABC):
     def search(self, sources: SkyCoord) -> tuple[np.ndarray, SkyCoord]:
         """Search catalog for objects near sources.
 
+
         Parameters
         ----------
         sources : SkyCoord
@@ -267,6 +269,7 @@ class Catalog(ABC):
     def xmatch(self, sources):
         """Cross-match sources to catalog.
 
+
         Parameters
         ----------
         sources : SkyCoord
@@ -311,6 +314,7 @@ class Catalog(ABC):
     def lookup(self, objids, columns, allow_null=False):
         """Lookup these columns for these objects.
 
+
         Parameters
         ----------
         objids : array-like
@@ -321,6 +325,7 @@ class Catalog(ABC):
 
         allow_null : bool, optional
             Set to ``True`` if null values are allowed.
+
 
         Returns
         -------
@@ -352,6 +357,7 @@ class Catalog(ABC):
     def cal_constant(self, matched, m_inst, filt, mlim=[14, 18], gmi_lim=None):
         """Estimate calibration constant without color correction.
 
+
         Parameters
         ----------
         matched : array-like
@@ -369,6 +375,7 @@ class Catalog(ABC):
         gmi_lim : list, optional
             Only fit stars with this g-i color range, or `None` to
             skip test.
+
 
         Returns
         -------
@@ -434,6 +441,7 @@ class Catalog(ABC):
     ):
         """Estimate calibration constant with color correction.
 
+
         Parameters
         ----------
         matched : array-like
@@ -457,6 +465,7 @@ class Catalog(ABC):
 
         gmi_lim : list, optional
             Only fit stars with this g-i color range, or `None` to disable.
+
 
         Returns
         -------

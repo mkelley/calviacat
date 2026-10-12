@@ -20,8 +20,8 @@ COLUMN_DEFS = (
     ("objid", "INTEGER PRIMARY KEY"),
     ("RA", "FLOAT"),
     ("Dec", "FLOAT"),
-    ("G", "FLOAT"),
-    ("dG", "FLOAT"),
+    ("Gaia", "FLOAT"),
+    ("dGaia", "FLOAT"),
     ("BP", "FLOAT"),
     ("dBP", "FLOAT"),
     ("RP", "FLOAT"),
@@ -46,6 +46,10 @@ COLUMN_DEFS = (
 class RefCat2(Catalog):
     """ATLAS-RefCat2 catalog queries.
 
+    Catalog includes Gaia G, BP, RP; g, r, i, z; and 2MASS J, H, K.
+
+    Note, the Gaia G magnitudes are labeled "Gaia".
+
 
     Parameters
     ----------
@@ -68,8 +72,10 @@ class RefCat2(Catalog):
 
     def __init__(self, dbfile, wsid=None, password=None, max_records=5000, **kwargs):
         filter2col = {}
-        for f in "griz":
+        for f in ["BP", "RP", "g", "r", "i", "z", "J", "H", "K"]:
             filter2col[f] = {"mag": f, "err": "d{}".format(f)}
+        filter2col["G"] = {"mag": "Gaia", "err": "dGaia"}
+
         rc2table = TableDefinition(
             "refcat2", COLUMN_DEFS, "objid", "RA", "Dec", filter2col
         )
