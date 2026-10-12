@@ -4,6 +4,7 @@ __all__ = ["Catalog"]
 
 import logging
 import sqlite3
+import warnings
 from abc import ABC, abstractmethod
 
 import astropy.units as u
@@ -47,6 +48,7 @@ class Catalog(ABC):
         max_records=3000,
         match_limit=1.5 * u.arcsec,
         min_matches=10,
+        offline=False,
     ):
         if logger is None:
             self.logger = logging.getLogger(__name__)
@@ -60,6 +62,7 @@ class Catalog(ABC):
         self.max_records = max_records
         self.match_limit = match_limit
         self.min_matches = min_matches
+        self.offline = offline
 
         self._open_db(dbfile)
 
@@ -143,6 +146,9 @@ class Catalog(ABC):
 
         Search radius and center may be derived from the source list.
 
+        If ``self.offline`` is True, then this function will emit a warning and
+        return.
+
 
         Parameters
         ----------
@@ -163,6 +169,13 @@ class Catalog(ABC):
             Increase the calculated query radius by this factor.
 
         """
+
+        if self.offline:
+            warnings.warn(
+                "Not fetching data.  Catalog is currently configured for "
+                "offline-only use."
+            )
+            return
 
         # query center is a straight mean
         ra = float(np.mean(center.ra.deg))
