@@ -6,7 +6,10 @@ import os
 import random
 import string
 
-from mastcasjobs import MastCasJobs
+try:
+    from mastcasjobs import MastCasJobs
+except ImportError:
+    MastCasJobs = None
 
 from .catalog import Catalog, TableDefinition
 
@@ -80,6 +83,7 @@ class RefCat2(Catalog):
             "refcat2", COLUMN_DEFS, "objid", "RA", "Dec", filter2col
         )
         super().__init__(dbfile, rc2table, max_records=max_records, **kwargs)
+
         self.credentials = {}
         self.credentials["userid"] = (
             os.environ.get("CASJOBS_WSID") if wsid is None else wsid
@@ -89,6 +93,11 @@ class RefCat2(Catalog):
         )
 
     def _fetch_field(self, ra: float, dec: float, sr: float) -> None:
+        if MastCasJobs is None:
+            raise ImportError(
+                "Attemping online query, but mastcasjobs is not installed"
+            )
+
         name = "calviacat_{}".format(
             "".join(random.choices(string.ascii_uppercase, k=5))
         )
