@@ -56,11 +56,11 @@ class RefCat2(Catalog):
         Database file name.
 
     wsid : int, optional
-        CasJobs WSID.  If not given, then the enviornment variable
+        CasJobs WSID.  If not given, then the environment variable
         ``CASJOBS_WSID`` will be used.
 
     password : string, optional
-        CasJobs password.  If not given, then the enviornment variable
+        CasJobs password.  If not given, then the environment variable
         ``CASJOBS_PW`` will be used.
 
     **kwargs
