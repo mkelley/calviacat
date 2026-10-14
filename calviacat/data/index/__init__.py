@@ -62,7 +62,6 @@ def create_index(db: sqlite3.Connection | sqlite3.Cursor, table: str):
             SIN({table_def.dec_column} * 0.017453292519943295)
         FROM {table};
     """
-    print(cmd)
     db.execute(cmd)
 
     # trigger insert when new data is added
