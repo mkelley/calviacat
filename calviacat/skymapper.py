@@ -5,7 +5,8 @@ __all__ = ["SkyMapper"]
 import numpy as np
 import pyvo as vo
 
-from .catalog import Catalog, TableDefinition
+from .catalog import Catalog
+from .table import TableDefinition
 
 # column names and SQLite type
 COLUMN_DEFS_DR12 = (
@@ -83,6 +84,30 @@ COLUMN_DEFS_DR4 = (
     ("e_z_psf", "FLOAT"),
 )
 
+filter2col = {}
+for f in "uvgriz":
+    filter2col[f] = {"mag": f + "_psf", "err": "e_" + f + "_psf"}
+
+table_def = {}
+for dr in [1, 2]:
+    table_def[dr] = TableDefinition(
+        f"skymapper_dr{dr}",
+        COLUMN_DEFS_DR12,
+        "object_id",
+        "raj2000",
+        "dej2000",
+        filter2col,
+    )
+
+table_def[4] = TableDefinition(
+    "skymapper_dr4",
+    COLUMN_DEFS_DR4,
+    "object_id",
+    "raj2000",
+    "dej2000",
+    filter2col,
+)
+
 
 class SkyMapper(Catalog):
     """Calibrate to SkyMapper catalog data.
@@ -112,29 +137,8 @@ class SkyMapper(Catalog):
     """
 
     def __init__(self, dbfile, max_records=2000, dr=4, **kwargs):
-        filter2col = {}
-        for f in "uvgriz":
-            filter2col[f] = {"mag": f + "_psf", "err": "e_" + f + "_psf"}
-
-        if dr in [1, 2]:
-            column_defs = COLUMN_DEFS_DR12
-        elif dr == 4:
-            column_defs = COLUMN_DEFS_DR4
-        else:
-            raise ValueError(
-                f"SkyMapper data releases 1, 2, and 4 are supported (DR{dr} requested)"
-            )
-
-        skym = TableDefinition(
-            f"skymapper_dr{dr}",
-            column_defs,
-            "object_id",
-            "raj2000",
-            "dej2000",
-            filter2col,
-        )
         self.dr = dr
-        super().__init__(dbfile, skym, max_records=max_records, **kwargs)
+        super().__init__(dbfile, table_def[dr], max_records=max_records, **kwargs)
 
     def _fetch_field(self, ra: float, dec: float, sr: float) -> None:
         self.logger.debug(

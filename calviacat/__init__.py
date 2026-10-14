@@ -3,15 +3,10 @@ from importlib.metadata import PackageNotFoundError
 from importlib.metadata import version as _version
 
 from .catalog import CalibrationError, Catalog
-from .panstarrs1 import PanSTARRS1
-from .skymapper import SkyMapper
-
-try:
-    from .refcat2 import RefCat2
-except ImportError:
-    pass
-
 from .gaia import Gaia
+from .panstarrs1 import PanSTARRS1
+from .refcat2 import RefCat2
+from .skymapper import SkyMapper
 
 try:
     __version__ = _version(__name__)

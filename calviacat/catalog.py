@@ -20,35 +20,25 @@ except ImportError:
 
     astropy_version = [int(x) for x in astropy.version.version.split(".")]
 
+from .data.index import create_index
+from .table import TableDefinition
+
 
 class CalibrationError(Exception):
     pass
 
 
-class TableDefinition:
-    def __init__(self, name, column_definitions, objid, ra, dec, filter2col):
-        self.name = name
-        self.column_definitions = column_definitions
-        self.objid = objid
-        self.ra = ra
-        self.dec = dec
-        self.filter2col = filter2col
-
-    @property
-    def columns(self):
-        return tuple((c[0] for c in self.column_definitions))
-
-
 class Catalog(ABC):
     def __init__(
         self,
-        dbfile,
-        table,
-        logger=None,
-        max_records=3000,
-        match_limit=1.5 * u.arcsec,
-        min_matches=10,
-        offline=False,
+        dbfile: str,
+        table: TableDefinition,
+        logger: logging.Logger | None = None,
+        max_records: int = 3000,
+        match_limit: u.Quantity = 1.5 * u.arcsec,
+        min_matches: int = 10,
+        offline: bool = False,
+        create_spatial_index: bool = True,
     ):
         if logger is None:
             self.logger = logging.getLogger(__name__)
@@ -64,9 +54,9 @@ class Catalog(ABC):
         self.min_matches = min_matches
         self.offline = offline
 
-        self._open_db(dbfile)
+        self._open_db(dbfile, create_spatial_index)
 
-    def _open_db(self, file_name):
+    def _open_db(self, file_name: str, create_spatial_index: bool):
         """Open and, if needed, initialize database.
 
 
@@ -75,6 +65,9 @@ class Catalog(ABC):
         file_name : string
             Name of the data base file, or `None` to use a temporary
             memory file.
+
+        create_spatial_index : bool
+            If ``True``, the spatial index will be created.
 
         """
 
@@ -92,50 +85,10 @@ class Catalog(ABC):
         self.db.create_function("COS", 1, np.cos)
 
         defs = ",\n  ".join(["{} {}".format(*c) for c in self.table.column_definitions])
-        self.db.execute(
-            """
-        CREATE TABLE IF NOT EXISTS
-        {}(
-          {}
-        )""".format(self.table.name, defs)
-        )
+        self.db.execute(f"CREATE TABLE IF NOT EXISTS {self.table.name}({defs})")
 
-        self.db.execute(
-            """
-        CREATE VIRTUAL TABLE IF NOT EXISTS
-        {}_skytree USING RTREE(
-          {} INTEGER PRIMARY KEY,
-          x0 FLOAT, x1 FLOAT,
-          y0 FLOAT, y1 FLOAT,
-          z0 FLOAT, z1 FLOAT
-        )""".format(self.table.name, self.table.objid)
-        )
-
-        self.db.execute(
-            """
-        CREATE TRIGGER IF NOT EXISTS
-        {table}_insert AFTER INSERT ON {table}
-        BEGIN
-          INSERT INTO {table}_skytree VALUES (
-            new.{objid},
-            COS(new.{dec} * 0.017453292519943295)
-            * COS(new.{ra} * 0.017453292519943295),
-            COS(new.{dec} * 0.017453292519943295)
-            * COS(new.{ra} * 0.017453292519943295),
-            COS(new.{dec} * 0.017453292519943295)
-            * SIN(new.{ra} * 0.017453292519943295),
-            COS(new.{dec} * 0.017453292519943295)
-            * SIN(new.{ra} * 0.017453292519943295),
-            SIN(new.{dec} * 0.017453292519943295),
-            SIN(new.{dec} * 0.017453292519943295)
-          );
-        END""".format(
-                table=self.table.name,
-                objid=self.table.objid,
-                ra=self.table.ra,
-                dec=self.table.dec,
-            )
-        )
+        if create_spatial_index:
+            create_index(self.db, self.table.name)
 
     def fetch_field(
         self,
@@ -252,9 +205,9 @@ class Catalog(ABC):
           AND z1 > ?
         """.format(
                 table=self.table.name,
-                objid=self.table.objid,
-                ra=self.table.ra,
-                dec=self.table.dec,
+                objid=self.table.objid_column,
+                ra=self.table.ra_column,
+                dec=self.table.dec_column,
             ),
             box,
         ).fetchall()
@@ -338,7 +291,9 @@ class Catalog(ABC):
         statement = """
         SELECT {columns} from {table}
         WHERE {objid}=?
-        """.format(columns=columns, table=self.table.name, objid=self.table.objid)
+        """.format(
+            columns=columns, table=self.table.name, objid=self.table.objid_column
+        )
 
         rows = []
         for objid in objids:

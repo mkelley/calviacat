@@ -70,6 +70,7 @@ Index | Name   |   Data Type   |   Unit   |   Description
 import argparse
 
 from ..refcat2 import RefCat2
+from .index import drop_index
 
 
 def add(filename: str, database: str) -> None:
@@ -87,11 +88,22 @@ def add(filename: str, database: str) -> None:
     database : str
         Calviacat database file name name.
 
+    drop_index : bool
+        If ``True``, then the spatial index will be dropped before adding rows.
+        It will not be re-created.
+
     """
 
-    rc2 = RefCat2(database, offline=True)
+    rc2 = RefCat2(database, offline=True, create_spatial_index=False)
+    drop_index(rc2.db, "refcat2")
 
-    chunk = 10
+    # test on 100,000 rows
+    # chunk 300 = 4.4 s
+    # chunk 1000 = 3.5 s
+    # chunk 3000 = 3.3 s
+    # chunk 10000 = 3.6 s
+    # chunk 30000 = 3.8 s
+    chunk = 3000
     total = 0
     with open(filename, "r") as inf:
         while True:
@@ -143,6 +155,10 @@ def add(filename: str, database: str) -> None:
             total += len(rows)
 
     print(f"{total} rows added.")
+    print(
+        "If the database is complete, create the spatial index with"
+        " calviacat.data.index --table=refcat2"
+    )
 
 
 if __name__ == "__main__":

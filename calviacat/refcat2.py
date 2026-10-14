@@ -11,7 +11,8 @@ try:
 except ImportError:
     MastCasJobs = None
 
-from .catalog import Catalog, TableDefinition
+from .catalog import Catalog
+from .table import TableDefinition
 
 
 class CasJobsFailed(Exception):
@@ -45,6 +46,16 @@ COLUMN_DEFS = (
     ("dK", "FLOAT"),
 )
 
+filter2col = {}
+for f in ["BP", "RP", "g", "r", "i", "z", "J", "H", "K"]:
+    filter2col[f] = {"mag": f, "err": "d{}".format(f)}
+filter2col["G"] = {"mag": "Gaia", "err": "dGaia"}
+
+# change table name and objid here and at calviacat.data.index
+table_def = TableDefinition("refcat2", COLUMN_DEFS, "objid", "RA", "Dec", filter2col)
+
+del filter2col
+
 
 class RefCat2(Catalog):
     """ATLAS-RefCat2 catalog queries.
@@ -74,15 +85,7 @@ class RefCat2(Catalog):
     """
 
     def __init__(self, dbfile, wsid=None, password=None, max_records=5000, **kwargs):
-        filter2col = {}
-        for f in ["BP", "RP", "g", "r", "i", "z", "J", "H", "K"]:
-            filter2col[f] = {"mag": f, "err": "d{}".format(f)}
-        filter2col["G"] = {"mag": "Gaia", "err": "dGaia"}
-
-        rc2table = TableDefinition(
-            "refcat2", COLUMN_DEFS, "objid", "RA", "Dec", filter2col
-        )
-        super().__init__(dbfile, rc2table, max_records=max_records, **kwargs)
+        super().__init__(dbfile, table_def, max_records=max_records, **kwargs)
 
         self.credentials = {}
         self.credentials["userid"] = (
