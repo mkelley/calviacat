@@ -66,7 +66,11 @@ ATLAS RefCat2 data may be obtained online, or the database can be prepopulated f
 python3 -m calviacat.data.refcat2 <csv_file> <db_file>
 ```
 
-Where ``<csv_file>`` and ``<db_file>`` are the names of the CSV file and the Calviacat database file, respectively.
+Where ``<csv_file>`` and ``<db_file>`` are the names of the CSV file and the Calviacat database file, respectively.  After all the files are added to the database, create the spatial index with:
+
+```bash
+python3 -m calviacat.data.index <db_file> refcat2
+```
 
 Online ATLAS-RefCat2 queries are executed with MAST CASJOBS, and therefore requires your MAST WSID (from <http://mastweb.stsci.edu/ps1casjobs/changedetails.aspx> after you login to Casjobs).  They may also come from the CASJOBS_WSID and CASJOBS_PW environment variables.
 
