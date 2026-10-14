@@ -93,16 +93,19 @@ def add(filename: str, database: str) -> None:
     """
 
     rc2 = RefCat2(database, offline=True, create_spatial_index=False)
+    rc2.db.autocommit = False
+
     drop_index(rc2.db, "refcat2")
 
-    # test on 100,000 rows
-    # chunk 300 = 4.4 s
-    # chunk 1000 = 3.5 s
-    # chunk 3000 = 3.3 s
-    # chunk 10000 = 3.6 s
-    # chunk 30000 = 3.8 s
-    chunk = 3000
+    # test on 1,000,000 rows
+    # chunk 3,000 = 1m15s
+    # chunk 10,000 = 36s
+    # chunk 30,000 = 18s
+    # chunk 100,000 = 14s
+    # chunk 300,000 = 13s
+    chunk = 100_000
     total = 0
+
     with open(filename, "r") as inf:
         while True:
             rows = []
@@ -151,6 +154,8 @@ def add(filename: str, database: str) -> None:
             rc2.db.commit()
 
             total += len(rows)
+
+    rc2.db.commit()
 
     print(f"{total} rows added.")
     print(
