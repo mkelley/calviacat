@@ -8,7 +8,7 @@ from ..table import TableDefinition
 
 
 class TestCatalog(Catalog):
-    def _fetch_field(self, sources):
+    def _fetch_field(self, sources):  # pragma: no cover
         pass
 
 
