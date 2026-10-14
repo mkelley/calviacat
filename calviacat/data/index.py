@@ -106,7 +106,7 @@ def drop_index(db: sqlite3.Connection | sqlite3.Cursor, table: str):
     db.execute(f"DROP TRIGGER IF EXISTS {table}_insert")
 
 
-if __name__ == "__main__":
+if __name__ == "__main__":  # pragma: no cover
     parser = argparse.ArgumentParser(
         "Drop and re-create Calviacat database spatial indices."
     )

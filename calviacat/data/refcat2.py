@@ -161,7 +161,7 @@ def add(filename: str, database: str) -> None:
     )
 
 
-if __name__ == "__main__":
+if __name__ == "__main__":  # pragma: no cover
     parser = argparse.ArgumentParser()
     parser.add_argument("csv", help="MAST-ATLAS-Refcat2 csv file")
     parser.add_argument("db", help="Calviacat database file")
