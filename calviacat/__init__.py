@@ -10,7 +10,7 @@ from .skymapper import SkyMapper
 
 try:
     __version__ = _version(__name__)
-except PackageNotFoundError:
+except PackageNotFoundError:  # pragma: no cover
     pass
 
 __all__ = ["CalibrationError", "Catalog", "Gaia", "PanSTARRS1", "RefCat2", "SkyMapper"]
