@@ -67,10 +67,8 @@ Index | Name   |   Data Type   |   Unit   |   Description
 
 """  # noqa: E501
 
-import argparse
-
-from ..refcat2 import RefCat2
-from .index import drop_index
+from ...refcat2 import RefCat2
+from ..index import drop_index
 
 
 def add(filename: str, database: str) -> None:
@@ -159,12 +157,3 @@ def add(filename: str, database: str) -> None:
         "If the database is complete, create the spatial index with"
         " calviacat.data.index --table=refcat2"
     )
-
-
-if __name__ == "__main__":  # pragma: no cover
-    parser = argparse.ArgumentParser()
-    parser.add_argument("csv", help="MAST-ATLAS-Refcat2 csv file")
-    parser.add_argument("db", help="Calviacat database file")
-    args = parser.parse_args()
-
-    add(args.csv, args.db)

@@ -2,10 +2,9 @@
 
 """Script to drop and re-generate the spatial index."""
 
-import argparse
 import sqlite3
 
-from ..table import registry as table_registry
+from ...table import registry as table_registry
 
 
 def create_index(db: sqlite3.Connection | sqlite3.Cursor, table: str):
@@ -104,16 +103,3 @@ def drop_index(db: sqlite3.Connection | sqlite3.Cursor, table: str):
 
     db.execute(f"DROP TABLE IF EXISTS {table}_skytree")
     db.execute(f"DROP TRIGGER IF EXISTS {table}_insert")
-
-
-if __name__ == "__main__":  # pragma: no cover
-    parser = argparse.ArgumentParser(
-        "Drop and re-create Calviacat database spatial indices."
-    )
-    parser.add_argument("db", help="Calviacat database file")
-    parser.add_argument("table", help="Recreate the index for this table.")
-    args = parser.parse_args()
-
-    db = sqlite3.connect(args.db, timeout=30)
-    drop_index(db, args.table)
-    create_index(db, args.table)
