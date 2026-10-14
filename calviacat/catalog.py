@@ -147,7 +147,6 @@ class Catalog(ABC):
     @abstractmethod
     def _fetch_field(self, ra: float, dec: float, sr: float) -> None:
         """Parameters are RA, Dec, and search radius in units of degrees."""
-        pass
 
     def search(self, sources: SkyCoord) -> tuple[np.ndarray, SkyCoord]:
         """Search catalog for objects near sources.
