@@ -45,7 +45,7 @@ def create_index(db: sqlite3.Connection | sqlite3.Cursor, table: str):
     )
 
     # insert the data to index
-    db.execute(f"""
+    cmd = f"""
         INSERT INTO {table}_skytree
             ({table_def.objid_column}, x0, x1, y0, y1, z0, z1)
         SELECT
@@ -61,7 +61,9 @@ def create_index(db: sqlite3.Connection | sqlite3.Cursor, table: str):
             SIN({table_def.dec_column} * 0.017453292519943295),
             SIN({table_def.dec_column} * 0.017453292519943295)
         FROM {table};
-    """)
+    """
+    print(cmd)
+    db.execute(cmd)
 
     # trigger insert when new data is added
     db.execute(f"""
@@ -83,6 +85,8 @@ def create_index(db: sqlite3.Connection | sqlite3.Cursor, table: str):
             );
         END
     """)
+
+    db.commit()
 
 
 def drop_index(db: sqlite3.Connection | sqlite3.Cursor, table: str):
