@@ -103,7 +103,12 @@ def add(filename: str, database: str) -> None:
     # chunk 30,000 = 18s
     # chunk 100,000 = 14s
     # chunk 300,000 = 13s
-    chunk = 100_000
+    #
+    # test on hlsp_atlas-refcat2_atlas_ccd_m90-m53_multi_v1_cat.csv
+    # 191,518,323 rows
+    # chunk 100,000 = 45m/22m/4m (real/user/sys)
+    # chunk 1,000,000 = 38m/27m/4m
+    chunk = 1_000_000
     total = 0
 
     with open(filename, "r") as inf:
