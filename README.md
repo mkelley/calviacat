@@ -74,7 +74,7 @@ Where ``<csv_file>`` and ``<db_file>`` are the names of the CSV file and the Cal
 python3 -m calviacat.data.index <db_file> refcat2
 ```
 
-Creating the index for the full data set can take 9 hours.
+Creating the index for the full data set can take 9 hours.  The final database size will be about 275 GB.
 
 ### Online catalogs
 

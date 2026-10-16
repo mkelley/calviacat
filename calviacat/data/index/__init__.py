@@ -7,10 +7,10 @@ import sqlite3
 from ...table import registry as table_registry
 
 
-def create_index(db: sqlite3.Connection | sqlite3.Cursor, table: str):
+def create_index(db: sqlite3.Connection | sqlite3.Cursor, table: str) -> bool:
     """Create the spatial index.
 
-    It is an error if the index already exists.
+    If the index already exists, nothing is done.
 
 
     Parameters
@@ -20,6 +20,12 @@ def create_index(db: sqlite3.Connection | sqlite3.Cursor, table: str):
 
     table : str, optional
         The table to index.
+
+
+    Returns
+    -------
+    created : bool
+        ``True`` if the index was created.
 
     """
 
@@ -31,6 +37,15 @@ def create_index(db: sqlite3.Connection | sqlite3.Cursor, table: str):
             f"{table} is not one of the registered tables: "
             + ", ".join(table_registry.keys())
         )
+
+    # if the index already exists, we're done
+    c = db.execute(
+        "SELECT COUNT() FROM sqlite_master "
+        f"WHERE type='table' AND name='{table}_skytree';"
+    )
+
+    if c.fetchone()[0] == 1:
+        return False
 
     # create the (virtual) table
     db.execute(
@@ -86,6 +101,8 @@ def create_index(db: sqlite3.Connection | sqlite3.Cursor, table: str):
     """)
 
     db.commit()
+
+    return True
 
 
 def drop_index(db: sqlite3.Connection | sqlite3.Cursor, table: str):
