@@ -1,6 +1,5 @@
 # Licensed with the MIT License, see LICENSE for details
 
-from sqlite3 import OperationalError
 
 import pytest
 
@@ -31,9 +30,8 @@ def test_valid_table():
     drop_index(cat.db, "test")
     create_index(cat.db, "test")
 
-    # index already exists
-    with pytest.raises(OperationalError):
-        create_index(cat.db, "test")
+    # OK if index already exists
+    create_index(cat.db, "test")
 
 
 def test_invalid_table():
