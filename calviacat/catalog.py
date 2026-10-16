@@ -28,6 +28,10 @@ class CalibrationError(Exception):
     pass
 
 
+class NoCatalogSources(Exception):
+    pass
+
+
 class Catalog(ABC):
     def __init__(
         self,
@@ -218,7 +222,7 @@ class Catalog(ABC):
         cat = SkyCoord(ra, dec, unit="deg")
         return objids, cat
 
-    def xmatch(self, sources):
+    def xmatch(self, sources: SkyCoord) -> tuple[np.ma.MaskedArray, np.ma.MaskedArray]:
         """Cross-match sources to catalog.
 
 
@@ -236,13 +240,18 @@ class Catalog(ABC):
         d : masked array
             Distance between match and source in arcsec.
 
+
+        Raises
+        ------
+        `NoCatalogSources` when the database search returned no sources.
+
         """
 
         objids, cat = self.search(sources)
 
         if len(cat) == 0:
             self.logger.error("No catalog sources to match.")
-            return
+            raise NoCatalogSources()
 
         idx, d2d = sources.match_to_catalog_sky(cat)[:2]
         i = d2d < self.match_limit
