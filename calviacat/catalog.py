@@ -13,13 +13,6 @@ from astropy.coordinates import SkyCoord
 from astropy.modeling import fitting, models
 from astropy.stats import sigma_clip, sigma_clipped_stats
 
-try:
-    from astropy.version import version_info as astropy_version
-except ImportError:
-    import astropy.version
-
-    astropy_version = [int(x) for x in astropy.version.version.split(".")]
-
 from .data.index import create_index
 from .exceptions import CalibrationError, XMatchError
 from .table import TableDefinition
@@ -500,17 +493,7 @@ class Catalog(ABC):
         if sum(i) == 0:
             raise CalibrationError("All sources masked.")
 
-        if astropy_version[0] > 3 or (
-            astropy_version[0] == 3 and astropy_version[1] >= 1
-        ):
-            # Return order changed in astropy 3.1
-            # (http://docs.astropy.org/en/stable/changelog.html#id10)
-            # Also now returns a boolean mask array rather than a
-            # MaskedArray of the data which could be applied back to
-            # reconstuct 'line' if needed (not currently used)
-            fit, mask = fitter(model, cindex[i], dm[i])
-        else:
-            line, fit = fitter(model, cindex[i], dm[i])
+        fit, mask = fitter(model, cindex[i], dm[i])
         C = fit.slope.value
         zp = fit.intercept.value
         cal_unc = sigma_clipped_stats((dm - fit(cindex))[i])[2]
