@@ -58,21 +58,29 @@ zp_mean, zp_median, unc, g, gmi = skym.cal_constant(objids, g_inst, "g")
 
 ## ATLAS-RefCat2
 
-ATLAS RefCat2 is an all sky photometric and astrometric catalog for g-, r-, i-, and z-band photometry on the PS1 system.  The catalog also includes Gaia DR2 G, BP, and RP and 2MASS J, H, and K photometry.  See [Tonry et al. (2018)](https://scixplorer.org/abs/2018ApJ...867..105T/abstract) for details.
+ATLAS RefCat2 is an all sky photometric and astrometric catalog for g-, r-, i-, and z-band photometry on the PS1 system.  The catalog also includes Gaia DR2 G, BP, and RP and 2MASS J, H, and K photometry.  See [Tonry et al. (2018)](https://scixplorer.org/abs/2018ApJ...867..105T/abstract) for details.  The catalog data may be obtained online, or the database can be prepopulated from CSV.
 
-ATLAS RefCat2 data may be obtained online, or the database can be prepopulated from CSV.  Download and unzip the MAST-formatted CSV files from <https://archive.stsci.edu/hlsp/atlas-refcat2>, then read in the data with the following command:
+### Offline catalogs
+
+Download and unzip the MAST-formatted CSV files from <https://archive.stsci.edu/hlsp/atlas-refcat2>, then read in the data with the following command:
 
 ```bash
 python3 -m calviacat.data.refcat2 <csv_file> <db_file>
 ```
 
-Where ``<csv_file>`` and ``<db_file>`` are the names of the CSV file and the Calviacat database file, respectively.  After all the files are added to the database, create the spatial index with:
+Where ``<csv_file>`` and ``<db_file>`` are the names of the CSV file and the Calviacat database file, respectively.  Processing one file can take about 30 to 60 minutes.  After all the files are added to the database, create the spatial index with:
 
 ```bash
 python3 -m calviacat.data.index <db_file> refcat2
 ```
 
+Creating the index for the full data set can take 9 hours.
+
+### Online catalogs
+
 Online ATLAS-RefCat2 queries are executed with MAST CASJOBS, and therefore requires your MAST WSID (from <http://mastweb.stsci.edu/ps1casjobs/changedetails.aspx> after you login to Casjobs).  They may also come from the CASJOBS_WSID and CASJOBS_PW environment variables.
+
+### Usage
 
 With RefCat2, we can calibrate the last example using a color correction:
 
