@@ -21,15 +21,8 @@ except ImportError:
     astropy_version = [int(x) for x in astropy.version.version.split(".")]
 
 from .data.index import create_index
+from .exceptions import CalibrationError, XMatchError
 from .table import TableDefinition
-
-
-class CalibrationError(Exception):
-    pass
-
-
-class NoCatalogSources(Exception):
-    pass
 
 
 class Catalog(ABC):
@@ -250,17 +243,17 @@ class Catalog(ABC):
         objids, cat = self.search(sources)
 
         if len(cat) == 0:
-            self.logger.error("No catalog sources to match.")
-            raise NoCatalogSources()
+            msg = "No catalog sources to match."
+            self.logger.error(msg)
+            raise XMatchError(msg)
 
         idx, d2d = sources.match_to_catalog_sky(cat)[:2]
         i = d2d < self.match_limit
         n = i.sum()
         if n < self.min_matches:
-            self.logger.error(
-                "Fewer than {} sources matched: {}.".format(self.min_matches, n)
-            )
-            return
+            msg = f"Fewer than {self.min_matches} sources matched: {n}."
+            self.logger.error(msg)
+            return XMatchError(msg)
 
         self.logger.info("Matched {} sources to photometric catalog.".format(n))
 
