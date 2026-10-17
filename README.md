@@ -17,14 +17,17 @@ Otherwise, when traceability to a specific version is needed, select the DOI app
 
 * sqlite3
 * requests
-* astropy, v3 or later
+* astropy
 * astroquery
-* [mastcasjobs](https://github.com/rlwastro/mastcasjobs) for ATLAS-RefCat2
+* pyvo
+* scipy
+
+Optional
+* mastcasjobs, for online searches of ATLAS-RefCat2
 
 ## Examples
 
-See the `examples/` directory for example scripts that calibrate Las
-Cumbres Observatory images of 41P/Tuttle-Giacobini-Kresák.
+See the `examples/` directory for example scripts that calibrate Las Cumbres Observatory images of 41P/Tuttle-Giacobini-Kresák.
 
 ## PanSTARRS catalog with color correction
 
