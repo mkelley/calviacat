@@ -229,7 +229,8 @@ class Catalog(ABC):
 
         Raises
         ------
-        `NoCatalogSources` when the database search returned no sources.
+        `XMatchError` when the database search returned no sources or not enough
+        sources were matched.
 
         """
 
