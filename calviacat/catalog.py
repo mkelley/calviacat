@@ -247,7 +247,7 @@ class Catalog(ABC):
         if n < self.min_matches:
             msg = f"Fewer than {self.min_matches} sources matched: {n}."
             self.logger.error(msg)
-            return XMatchError(msg)
+            raise XMatchError(msg)
 
         self.logger.info("Matched {} sources to photometric catalog.".format(n))
 
