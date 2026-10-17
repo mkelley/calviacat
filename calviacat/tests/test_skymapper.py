@@ -1,6 +1,7 @@
 # Licensed with the MIT License, see LICENSE for details
 
 import astropy.units as u
+import pytest
 from astropy.coordinates import SkyCoord
 
 from calviacat.skymapper import SkyMapper
@@ -21,3 +22,8 @@ class TestSkyMapper:
         skym.fetch_field(corners)
         catalog_ids, coords = skym.search(corners)
         assert len(catalog_ids) == 337
+
+    def test_dr3(self):
+        """DR3 is not allowed"""
+        with pytest.raises(ValueError):
+            SkyMapper(":memory:", dr=3)
