@@ -4,6 +4,7 @@ __all__ = ["Catalog"]
 
 import logging
 import sqlite3
+import sys
 import warnings
 from abc import ABC, abstractmethod
 
@@ -61,10 +62,16 @@ class Catalog(ABC):
 
         """
 
-        if file_name is None:
-            self.db = sqlite3.connect(":memory:")
+        opts = {}
+        if sys.version_info < (3, 12):
+            opts["isolation_level"] = "DEFERRED"
         else:
-            self.db = sqlite3.connect(file_name, timeout=30)
+            opts["autocommit"] = False
+
+        if file_name is None:
+            self.db = sqlite3.connect(":memory:", **opts)
+        else:
+            self.db = sqlite3.connect(file_name, timeout=30, **opts)
 
         sqlite3.register_adapter(np.int64, int)
         sqlite3.register_adapter(np.int32, int)

@@ -93,7 +93,6 @@ def add(filename: str, database: str) -> None:
     """
 
     rc2 = RefCat2(database, offline=True, create_spatial_index=False)
-    rc2.db.autocommit = False
 
     drop_index(rc2.db, "refcat2")
 
