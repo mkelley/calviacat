@@ -137,6 +137,11 @@ class SkyMapper(Catalog):
     """
 
     def __init__(self, dbfile, max_records=2000, dr=4, **kwargs):
+        if dr not in [1, 2, 4]:
+            raise ValueError(
+                f"SkyMapper data releases 1, 2, and 4 are supported (DR{dr} requested)"
+            )
+
         self.dr = dr
         super().__init__(dbfile, table_def[dr], max_records=max_records, **kwargs)
 
