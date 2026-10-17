@@ -3,6 +3,7 @@
 __all__ = ["Catalog"]
 
 import logging
+import os
 import sqlite3
 from abc import ABC, abstractmethod
 
@@ -74,10 +75,14 @@ class Catalog(ABC):
 
         """
 
+        is_new_db = True
         if file_name is None:
             self.db = sqlite3.connect(":memory:")
         else:
+            is_new_db = not os.path.exists(file_name)
             self.db = sqlite3.connect(file_name, timeout=30)
+
+        self._verify_database(is_new_db)
 
         sqlite3.register_adapter(np.int64, int)
         sqlite3.register_adapter(np.int32, int)
@@ -132,6 +137,22 @@ class Catalog(ABC):
                 dec=self.table.dec,
             )
         )
+
+    def _verify_database(self, is_new_db: bool) -> None:
+        # verify that this is a calviacat database
+        # int(hashlib.md5(b"calviacat").hexdigest(), 16) & 0xFFFFFFF
+        app_id = 176605996
+        if is_new_db:
+            # set the application ID
+            self.db.execute(f"PRAGMA application_id = {app_id}")
+        else:
+            # check the application ID
+            result = self.db.execute("PRAGMA application_id").fetchone()[0]
+            if result != app_id:
+                raise InvalidDatabaseError(
+                    "Existing database does not appear to have "
+                    "originated from calviacat."
+                )
 
     def fetch_field(
         self,
