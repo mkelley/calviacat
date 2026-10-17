@@ -8,7 +8,7 @@ from ..exceptions import XMatchError
 from ..table import TableDefinition
 
 
-class TestCatalog(Catalog):
+class MockCatalog(Catalog):
     def _fetch_field(self, sources):  # pragma: no cover
         pass
 
@@ -26,7 +26,7 @@ table_def = TableDefinition(
 
 
 def test_offline():
-    cat = TestCatalog(None, table_def, offline=True)
+    cat = MockCatalog(None, table_def, offline=True)
     sources = SkyCoord(
         [179.45364084, 193.41319168], [-89.95472658, -89.95036938], unit="deg"
     )
@@ -35,7 +35,7 @@ def test_offline():
 
 
 def test_no_catalog_sources():
-    cat = TestCatalog(None, table_def, offline=True)
+    cat = MockCatalog(None, table_def, offline=True)
     sources = SkyCoord(
         [179.45364084, 193.41319168], [-89.95472658, -89.95036938], unit="deg"
     )
@@ -44,7 +44,7 @@ def test_no_catalog_sources():
 
 
 def test_not_enough_matches():
-    cat = TestCatalog(None, table_def, offline=True)
+    cat = MockCatalog(None, table_def, offline=True)
     sources = SkyCoord(
         [179.45364084, 193.41319168], [-89.95472658, -89.95036938], unit="deg"
     )

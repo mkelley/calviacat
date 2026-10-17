@@ -8,7 +8,7 @@ from ..data.index import create_index, drop_index
 from ..table import TableDefinition
 
 
-class TestCatalog(Catalog):
+class MockCatalog(Catalog):
     def _fetch_field(self, sources):  # pragma: no cover
         pass
 
@@ -26,7 +26,7 @@ table_def = TableDefinition(
 
 
 def test_valid_table():
-    cat = TestCatalog(None, table_def, offline=True)
+    cat = MockCatalog(None, table_def, offline=True)
     drop_index(cat.db, "test")
     create_index(cat.db, "test")
 
@@ -35,6 +35,6 @@ def test_valid_table():
 
 
 def test_invalid_table():
-    cat = TestCatalog(None, table_def, offline=True)
+    cat = MockCatalog(None, table_def, offline=True)
     with pytest.raises(LookupError):
         create_index(cat.db, "doesnotexist")
