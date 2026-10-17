@@ -163,6 +163,6 @@ def add(filename: str, database: str) -> None:
 
     print(f"{total} rows added.")
     print(
-        "If the database is complete, create the spatial index with "
-        f"python3 -m calviacat.data.index {database} refcat2"
+        "If the database is complete, create the spatial index with\n"
+        f"  python3 -m calviacat.data.index {database} refcat2"
     )
