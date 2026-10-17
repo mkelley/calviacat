@@ -210,6 +210,7 @@ class Catalog(ABC):
             np.cos(mean_dec) * np.sin(mean_ra),
             np.sin(mean_dec),
         )
+        mean_xyz /= np.linalg.norm(mean_xyz)
         xyz = np.array(
             (np.cos(dec) * np.cos(ra), np.cos(dec) * np.sin(ra), np.sin(dec))
         )
