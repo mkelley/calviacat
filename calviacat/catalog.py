@@ -20,6 +20,46 @@ from .table import TableDefinition
 
 
 class Catalog(ABC):
+    """Abstract base class for data catalog and calibration.
+
+
+    Parameters
+    ----------
+    dbfile : str
+        File name of the database, or ``None``/":memory:" for an in-memory
+        database.
+
+    table : TableDefinition
+        Table parameters for this catalog.
+
+    logger : logging.Logger, optional
+        Send log messages to this logger.
+
+    max_records : int, optional
+        Maximum number of records to return from remote data sources.
+
+    match_limit : Quantity, optional
+        Maximum angular distance for a catalog source to be considered a match.
+
+    min_matches : int, optional
+        Require at least this many catalog matches when calibrating data.
+
+    offline : bool, optional
+        Set to ``True`` to prevent any remote queries.
+
+    create_spatial_index : bool, optional
+        Set to ``False`` to prevent the spatial index from being created.  This
+        is generally used when progressively building an offline database.
+
+    """
+
+    # trim `table` from parameters docstring for inheriting classes
+    lines = __doc__.splitlines()
+    i = lines.index("    Parameters")
+    j = lines.index("    table : TableDefinition")
+    _inherited_parameters = "\n".join(lines[i + 1 : j] + lines[j + 3 :])
+    del lines, i, j
+
     def __init__(
         self,
         dbfile: str,
