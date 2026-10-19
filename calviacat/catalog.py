@@ -132,7 +132,7 @@ class Catalog(ABC):
         ra = float(np.mean(center.ra.deg))
         dec = float(np.mean(center.dec.deg))
 
-        if len(center) > 1 and radius is None:
+        if np.size(center) > 1 and radius is None:
             sr = float(max(center.separation(c).max().deg for c in center) * scale / 2)
         elif radius is None:
             raise ValueError("radius is required when center is a single coordinate")
