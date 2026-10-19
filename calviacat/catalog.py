@@ -137,7 +137,7 @@ class Catalog(ABC):
         elif radius is None:
             raise ValueError("radius is required when center is a single coordinate")
         else:
-            sr = float(u.Quantity(radius, "deg").value())
+            sr = float(u.Quantity(radius, "deg").value)
 
         return self._fetch_field(ra, dec, sr)
 
