@@ -47,7 +47,7 @@ def create_index(db: sqlite3.Connection, table: str) -> bool:
 
     c = db.execute(
         "SELECT TRUE FROM sqlite_master "
-        f"WHERE type='trigger' AND name='{table}_skytree';"
+        f"WHERE type='trigger' AND name='{table}_insert';"
     )
     trigger_exists = c.fetchone() is not None
 
