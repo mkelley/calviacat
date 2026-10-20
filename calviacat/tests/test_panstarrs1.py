@@ -2,7 +2,7 @@
 
 """Offline query data may be retrieved from:
 
-https://catalogs.mast.stsci.edu/api/v0.1/panstarrs/dr1/mean?ra=210.802429&dec=54.348750&radius=0.00833333&pagesize=10&format=json&columns=[objName,objID,raMean,decMean,raMeanErr,decMeanErr,nDetections,randomID,projectionID,skyCellID,objInfoFlag,qualityFlag,raStack,decStack,raStackErr,decStackErr,epochMean,nStackDetections,ng,gQfPerfect,gMeanPSFMag,gMeanPSFMagErr,gMeanKronMag,gMeanKronMagErr,gMeanApMag,gMeanApMagErr,gFlags,nr,rQfPerfect,rMeanPSFMag,rMeanPSFMagErr,rMeanKronMag,rMeanKronMagErr,rMeanApMag,rMeanApMagErr,rFlags,ni,iQfPerfect,iMeanPSFMag,iMeanPSFMagErr,iMeanKronMag,iMeanKronMagErr,iMeanApMag,iMeanApMagErr,iFlags,nz,zQfPerfect,zMeanPSFMag,zMeanPSFMagErr,zMeanKronMag,zMeanKronMagErr,zMeanApMag,zMeanApMagErr,zFlags,ny,yQfPerfect,yMeanPSFMag,yMeanPSFMagErr,yMeanKronMag,yMeanKronMagErr,yMeanApMag,yMeanApMagErr,yFlags]
+https://catalogs.mast.stsci.edu/api/v0.1/panstarrs/dr1/mean?ra=200&dec=50&radius=0.01&nDetections.gte=2&pagesize=10&format=json&columns=[objName,objID,raMean,decMean,raMeanErr,decMeanErr,nDetections,randomID,projectionID,skyCellID,objInfoFlag,qualityFlag,raStack,decStack,raStackErr,decStackErr,epochMean,nStackDetections,ng,gQfPerfect,gMeanPSFMag,gMeanPSFMagErr,gMeanKronMag,gMeanKronMagErr,gMeanApMag,gMeanApMagErr,gFlags,nr,rQfPerfect,rMeanPSFMag,rMeanPSFMagErr,rMeanKronMag,rMeanKronMagErr,rMeanApMag,rMeanApMagErr,rFlags,ni,iQfPerfect,iMeanPSFMag,iMeanPSFMagErr,iMeanKronMag,iMeanKronMagErr,iMeanApMag,iMeanApMagErr,iFlags,nz,zQfPerfect,zMeanPSFMag,zMeanPSFMagErr,zMeanKronMag,zMeanKronMagErr,zMeanApMag,zMeanApMagErr,zFlags,ny,yQfPerfect,yMeanPSFMag,yMeanPSFMagErr,yMeanKronMag,yMeanKronMagErr,yMeanApMag,yMeanApMagErr,yFlags]
 
 save as data/ps1.json
 
@@ -40,83 +40,84 @@ class TestPanSTARRS1:
     def test_fetch_field(self, monkeypatch):
         monkeypatch.setattr(requests, "get", mocked_requests_get)
 
-        corners = SkyCoord(
-            [210.79, 210.81, 210.81, 210.79] * u.deg,
-            [54.34, 54.34, 54.36, 54.36] * u.deg,
+        sources = SkyCoord(
+            [199.9, 200.1, 200.1, 199.9] * u.deg,
+            [49.9, 50.1, 50.1, 49.9] * u.deg,
         )
 
         ps1 = PanSTARRS1(":memory:")
-        ps1.fetch_field(corners)
-        catalog_ids, _ = ps1.search(corners)
+        ps1.fetch_field(sources)
+        catalog_ids, _ = ps1.search(sources)
         assert len(catalog_ids) == 10
 
-        row = ps1.lookup(catalog_ids[:1], ",".join(ps1.table.columns))[0]
+        row = ps1.lookup([168002000088058883], ",".join(ps1.table.columns))[0]
 
         expected = [
-            "PSO J140310.964+542031.310",
-            173212107956881105,
-            210.79565067,
-            54.34202381,
-            0.03886000066995621,
-            0.03886000066995621,
-            1,
-            0.567481060109549,
-            2381,
+            "PSO J132002.116+500024.642",
+            168002000088058883,
+            200.00889097,
+            50.00682584,
+            0.013030000030994415,
+            0.014449999667704105,
+            63,
+            0.0899922261852699,
+            2322,
+            51,
+            444915712,
             53,
-            310456320,
-            37,
-            -999.0,
-            -999.0,
-            -999.0,
-            -999.0,
-            56842.2708912,
-            0,
-            0,
-            -999.0,
-            -999.0,
-            -999.0,
-            -999.0,
-            -999.0,
-            -999.0,
-            -999.0,
-            0,
-            0,
-            -999.0,
-            -999.0,
-            -999.0,
-            -999.0,
-            -999.0,
-            -999.0,
-            -999.0,
-            0,
-            1,
-            0.9707229733467102,
-            18.699100494384766,
-            0.03585200011730194,
-            12.125699996948242,
-            0.0010189999593421817,
-            17.134700775146484,
-            0.03585200011730194,
-            16777496,
-            0,
-            -999.0,
-            -999.0,
-            -999.0,
-            -999.0,
-            -999.0,
-            -999.0,
-            -999.0,
-            0,
-            0,
-            -999.0,
-            -999.0,
-            -999.0,
-            -999.0,
-            -999.0,
-            -999.0,
-            -999.0,
-            0,
+            200.0088184,
+            50.00684503,
+            0.0010000000474974513,
+            0.0010000000474974513,
+            56023.74878472,
+            5,
+            14,
+            0.9997140169143677,
+            21.28660011291504,
+            0.027884000912308693,
+            21.096200942993164,
+            0.058371998369693756,
+            21.015100479125977,
+            0.09455599635839462,
+            16892216,
+            18,
+            0.9996370077133179,
+            20.04360008239746,
+            0.023608999326825142,
+            19.75149917602539,
+            0.01755400002002716,
+            19.702600479125977,
+            0.014662000350654125,
+            16892216,
+            10,
+            0.9997000098228455,
+            19.59149932861328,
+            0.028703000396490097,
+            19.299100875854492,
+            0.021524999290704727,
+            19.26289939880371,
+            0.019453000277280807,
+            16892216,
+            11,
+            0.9996650218963623,
+            19.3262996673584,
+            0.030858999118208885,
+            19.109699249267578,
+            0.04419099912047386,
+            19.038000106811523,
+            0.02351599931716919,
+            16892216,
+            10,
+            0.9991440176963806,
+            19.010400772094727,
+            0.072113998234272,
+            18.770299911499023,
+            0.045180998742580414,
+            18.678800582885742,
+            0.024421000853180885,
+            16892216,
         ]
+
         assert row[0] == expected[0]
         for i in range(1, len(row)):
             assert np.isclose(row[i], expected[i])
