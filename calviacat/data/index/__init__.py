@@ -4,6 +4,7 @@
 
 import sqlite3
 
+from ...exceptions import DatabaseError
 from ...table import registry as table_registry
 
 
@@ -38,16 +39,32 @@ def create_index(db: sqlite3.Connection, table: str) -> bool:
             + ", ".join(table_registry.keys())
         )
 
-    # if the index already exists, we're done
+    # check for the index and trigger
     c = db.execute(
-        "SELECT COUNT() FROM sqlite_master "
-        f"WHERE type='table' AND name='{table}_skytree';"
+        f"SELECT TRUE FROM sqlite_master WHERE type='table' AND name='{table}_skytree';"
     )
+    index_exists = c.fetchone() is not None
 
-    if c.fetchone()[0] == 1:
+    c = db.execute(
+        "SELECT TRUE FROM sqlite_master "
+        f"WHERE type='trigger' AND name='{table}_skytree';"
+    )
+    trigger_exists = c.fetchone() is not None
+
+    # if both exist, then there is nothing to do
+    if index_exists and trigger_exists:
         return False
 
-    # create the (virtual) table
+    # if the index exists, but the trigger is missing, then there is a serious
+    # issue
+    if index_exists and not trigger_exists:
+        raise DatabaseError(
+            f"The table {table}_skytree exists but the trigger "
+            f"{table}_insert does not.  Consider dropping and "
+            "re-creating the index."
+        )
+
+    # neither exist, so create the (virtual) table
     db.execute(
         f"""
             CREATE VIRTUAL TABLE

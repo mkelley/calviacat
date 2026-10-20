@@ -5,11 +5,12 @@ import pytest
 
 from ..catalog import Catalog
 from ..data.index import create_index, drop_index
+from ..exceptions import DatabaseError
 from ..table import TableDefinition
 
 
 class MockCatalog(Catalog):
-    def _fetch_field(self, sources):  # pragma: no cover
+    def _fetch_field(self, ra, dec, sr):  # pragma: no cover
         pass
 
 
@@ -38,3 +39,10 @@ def test_invalid_table():
     cat = MockCatalog(None, table_def, offline=True)
     with pytest.raises(LookupError):
         create_index(cat.db, "doesnotexist")
+
+
+def test_missing_trigger():
+    cat = MockCatalog(None)
+    cat.db.execute("DROP TRIGGER test_insert")
+    with pytest.raises(DatabaseError):
+        create_index(cat.db, "test")
