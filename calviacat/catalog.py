@@ -45,20 +45,23 @@ class Catalog(ABC):
         self.min_matches = min_matches
         self.offline = offline
 
-        self._open_db(dbfile, create_spatial_index)
+        self.db = self.open_db(dbfile)
+        self._init_db(create_spatial_index)
 
-    def _open_db(self, file_name: str, create_spatial_index: bool):
-        """Open and, if needed, initialize database.
+    @staticmethod
+    def open_db(file_name: str) -> sqlite3.Connection:
+        """Open a Calviacat database.
 
 
         Parameters
         ----------
         file_name : string
-            Name of the data base file, or `None` to use a temporary
-            memory file.
+            Name of the data base file, or `None` to use a temporary memory
+            file.
 
-        create_spatial_index : bool
-            If ``True``, the spatial index will be created.
+        Returns
+        -------
+        db : sqlite3.Connection
 
         """
 
@@ -69,17 +72,34 @@ class Catalog(ABC):
             opts["autocommit"] = False
 
         if file_name is None:
-            self.db = sqlite3.connect(":memory:", **opts)
+            db = sqlite3.connect(":memory:", **opts)
         else:
-            self.db = sqlite3.connect(file_name, timeout=30, **opts)
+            db = sqlite3.connect(file_name, timeout=30, **opts)
 
         sqlite3.register_adapter(np.int64, int)
         sqlite3.register_adapter(np.int32, int)
         sqlite3.register_adapter(np.float64, float)
         sqlite3.register_adapter(np.float32, float)
 
-        self.db.create_function("SIN", 1, np.sin)
-        self.db.create_function("COS", 1, np.cos)
+        db.create_function("SIN", 1, np.sin)
+        db.create_function("COS", 1, np.cos)
+
+        db.commit()
+
+        return db
+
+    def _init_db(self, create_spatial_index: bool):
+        """Initialize the associated Calviacat database.
+
+        Has no effect if the tables already exist.
+
+
+        Parameters
+        ----------
+        create_spatial_index : bool
+            If ``True``, the spatial index will also be created.
+
+        """
 
         defs = ",\n  ".join(["{} {}".format(*c) for c in self.table.column_definitions])
         self.db.execute(f"CREATE TABLE IF NOT EXISTS {self.table.name}({defs})")
