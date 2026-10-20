@@ -123,3 +123,4 @@ def drop_index(db: sqlite3.Connection | sqlite3.Cursor, table: str):
 
     db.execute(f"DROP TABLE IF EXISTS {table}_skytree")
     db.execute(f"DROP TRIGGER IF EXISTS {table}_insert")
+    db.commit()

@@ -87,6 +87,8 @@ class Catalog(ABC):
         if create_spatial_index:
             create_index(self.db, self.table.name)
 
+        self.db.commit()
+
     def fetch_field(
         self,
         center: SkyCoord,
@@ -207,6 +209,7 @@ class Catalog(ABC):
             ),
             box,
         ).fetchall()
+        self.db.commit()
 
         if len(rows) == 0:
             return [], SkyCoord([], [], unit="deg")
@@ -309,6 +312,7 @@ class Catalog(ABC):
             else:
                 rows.append(row)
 
+        self.db.commit()
         return rows
 
     def cal_constant(self, matched, m_inst, filt, mlim=[14, 18], gmi_lim=None):
