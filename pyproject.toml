@@ -11,10 +11,11 @@ license = { text = "MIT" }
 requires-python = ">=3.11"
 dependencies = [
     "astropy>=6.1",
-    "numpy>=2",
-    "requests",
     "astroquery>=0.4.5",
-    "pyvo>=1.5"
+    "numpy>=2",
+    "pyvo>=1.5",
+    "requests",
+    "scipy>=1.8",
 ]
 dynamic = [ "version" ]
 

@@ -2,20 +2,25 @@
 from importlib.metadata import PackageNotFoundError
 from importlib.metadata import version as _version
 
-from .catalog import CalibrationError, Catalog
+from .catalog import Catalog
+from .exceptions import CalibrationError, DatabaseError, XMatchError
+from .gaia import Gaia
 from .panstarrs1 import PanSTARRS1
+from .refcat2 import RefCat2
 from .skymapper import SkyMapper
 
 try:
-    from .refcat2 import RefCat2
-except ImportError:
-    pass
-
-from .gaia import Gaia
-
-try:
     __version__ = _version(__name__)
-except PackageNotFoundError:
+except PackageNotFoundError:  # pragma: no cover
     pass
 
-__all__ = ["CalibrationError", "Catalog", "Gaia", "PanSTARRS1", "RefCat2", "SkyMapper"]
+__all__ = [
+    "CalibrationError",
+    "Catalog",
+    "DatabaseError",
+    "Gaia",
+    "PanSTARRS1",
+    "RefCat2",
+    "SkyMapper",
+    "XMatchError",
+]

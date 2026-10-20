@@ -4,6 +4,8 @@ __all__ = ["Catalog"]
 
 import logging
 import sqlite3
+import sys
+import warnings
 from abc import ABC, abstractmethod
 
 import astropy.units as u
@@ -12,41 +14,22 @@ from astropy.coordinates import SkyCoord
 from astropy.modeling import fitting, models
 from astropy.stats import sigma_clip, sigma_clipped_stats
 
-try:
-    from astropy.version import version_info as astropy_version
-except ImportError:
-    import astropy.version
-
-    astropy_version = [int(x) for x in astropy.version.version.split(".")]
-
-
-class CalibrationError(Exception):
-    pass
-
-
-class TableDefinition:
-    def __init__(self, name, column_definitions, objid, ra, dec, filter2col):
-        self.name = name
-        self.column_definitions = column_definitions
-        self.objid = objid
-        self.ra = ra
-        self.dec = dec
-        self.filter2col = filter2col
-
-    @property
-    def columns(self):
-        return tuple((c[0] for c in self.column_definitions))
+from .data.index import create_index
+from .exceptions import CalibrationError, XMatchError
+from .table import TableDefinition
 
 
 class Catalog(ABC):
     def __init__(
         self,
-        dbfile,
-        table,
-        logger=None,
-        max_records=3000,
-        match_limit=1.5 * u.arcsec,
-        min_matches=10,
+        dbfile: str,
+        table: TableDefinition,
+        logger: logging.Logger | None = None,
+        max_records: int = 3000,
+        match_limit: u.Quantity = 1.5 * u.arcsec,
+        min_matches: int = 10,
+        offline: bool = False,
+        create_spatial_index: bool = True,
     ):
         if logger is None:
             self.logger = logging.getLogger(__name__)
@@ -60,78 +43,71 @@ class Catalog(ABC):
         self.max_records = max_records
         self.match_limit = match_limit
         self.min_matches = min_matches
+        self.offline = offline
 
-        self._open_db(dbfile)
+        self.db = self.open_db(dbfile)
+        self._init_db(create_spatial_index)
 
-    def _open_db(self, file_name):
-        """Open and, if needed, initialize database.
+    @staticmethod
+    def open_db(file_name: str) -> sqlite3.Connection:
+        """Open a Calviacat database.
+
 
         Parameters
         ----------
         file_name : string
-            Name of the data base file, or `None` to use a temporary
-            memory file.
+            Name of the data base file, or `None` to use a temporary memory
+            file.
+
+        Returns
+        -------
+        db : sqlite3.Connection
 
         """
 
-        if file_name is None:
-            self.db = sqlite3.connect(":memory:")
+        opts = {}
+        if sys.version_info < (3, 12):
+            opts["isolation_level"] = "DEFERRED"
         else:
-            self.db = sqlite3.connect(file_name, timeout=30)
+            opts["autocommit"] = False
+
+        if file_name is None:
+            db = sqlite3.connect(":memory:", **opts)
+        else:
+            db = sqlite3.connect(file_name, timeout=30, **opts)
 
         sqlite3.register_adapter(np.int64, int)
         sqlite3.register_adapter(np.int32, int)
         sqlite3.register_adapter(np.float64, float)
         sqlite3.register_adapter(np.float32, float)
 
-        self.db.create_function("SIN", 1, np.sin)
-        self.db.create_function("COS", 1, np.cos)
+        db.create_function("SIN", 1, np.sin)
+        db.create_function("COS", 1, np.cos)
+
+        db.commit()
+
+        return db
+
+    def _init_db(self, create_spatial_index: bool):
+        """Initialize the associated Calviacat database.
+
+        Has no effect if the tables already exist.
+
+
+        Parameters
+        ----------
+        create_spatial_index : bool
+            If ``True``, the spatial index will also be created.
+
+        """
 
         defs = ",\n  ".join(["{} {}".format(*c) for c in self.table.column_definitions])
-        self.db.execute(
-            """
-        CREATE TABLE IF NOT EXISTS
-        {}(
-          {}
-        )""".format(self.table.name, defs)
-        )
+        self.db.execute(f"CREATE TABLE IF NOT EXISTS {self.table.name}({defs})")
 
-        self.db.execute(
-            """
-        CREATE VIRTUAL TABLE IF NOT EXISTS
-        {}_skytree USING RTREE(
-          {} INTEGER PRIMARY KEY,
-          x0 FLOAT, x1 FLOAT,
-          y0 FLOAT, y1 FLOAT,
-          z0 FLOAT, z1 FLOAT
-        )""".format(self.table.name, self.table.objid)
-        )
+        if create_spatial_index:
+            create_index(self.db, self.table.name)
 
-        self.db.execute(
-            """
-        CREATE TRIGGER IF NOT EXISTS
-        {table}_insert AFTER INSERT ON {table}
-        BEGIN
-          INSERT INTO {table}_skytree VALUES (
-            new.{objid},
-            COS(new.{dec} * 0.017453292519943295)
-            * COS(new.{ra} * 0.017453292519943295),
-            COS(new.{dec} * 0.017453292519943295)
-            * COS(new.{ra} * 0.017453292519943295),
-            COS(new.{dec} * 0.017453292519943295)
-            * SIN(new.{ra} * 0.017453292519943295),
-            COS(new.{dec} * 0.017453292519943295)
-            * SIN(new.{ra} * 0.017453292519943295),
-            SIN(new.{dec} * 0.017453292519943295),
-            SIN(new.{dec} * 0.017453292519943295)
-          );
-        END""".format(
-                table=self.table.name,
-                objid=self.table.objid,
-                ra=self.table.ra,
-                dec=self.table.dec,
-            )
-        )
+        self.db.commit()
 
     def fetch_field(
         self,
@@ -142,6 +118,9 @@ class Catalog(ABC):
         """Fetch catalog sources and save to database.
 
         Search radius and center may be derived from the source list.
+
+        If ``self.offline`` is True, then this function will emit a warning and
+        return.
 
 
         Parameters
@@ -164,26 +143,33 @@ class Catalog(ABC):
 
         """
 
+        if self.offline:
+            warnings.warn(
+                "Not fetching data.  Catalog is currently configured for "
+                "offline-only use."
+            )
+            return
+
         # query center is a straight mean
         ra = float(np.mean(center.ra.deg))
         dec = float(np.mean(center.dec.deg))
 
-        if len(center) > 1 and radius is None:
+        if np.size(center) > 1 and radius is None:
             sr = float(max(center.separation(c).max().deg for c in center) * scale / 2)
         elif radius is None:
             raise ValueError("radius is required when center is a single coordinate")
         else:
-            sr = float(u.Quantity(radius, "deg").value())
+            sr = float(u.Quantity(radius, "deg").value)
 
         return self._fetch_field(ra, dec, sr)
 
     @abstractmethod
     def _fetch_field(self, ra: float, dec: float, sr: float) -> None:
         """Parameters are RA, Dec, and search radius in units of degrees."""
-        pass
 
-    def search(self, sources):
+    def search(self, sources: SkyCoord) -> tuple[np.ndarray, SkyCoord]:
         """Search catalog for objects near sources.
+
 
         Parameters
         ----------
@@ -237,12 +223,13 @@ class Catalog(ABC):
           AND z1 > ?
         """.format(
                 table=self.table.name,
-                objid=self.table.objid,
-                ra=self.table.ra,
-                dec=self.table.dec,
+                objid=self.table.objid_column,
+                ra=self.table.ra_column,
+                dec=self.table.dec_column,
             ),
             box,
         ).fetchall()
+        self.db.commit()
 
         if len(rows) == 0:
             return [], SkyCoord([], [], unit="deg")
@@ -251,8 +238,9 @@ class Catalog(ABC):
         cat = SkyCoord(ra, dec, unit="deg")
         return objids, cat
 
-    def xmatch(self, sources):
+    def xmatch(self, sources: SkyCoord) -> tuple[np.ma.MaskedArray, np.ma.MaskedArray]:
         """Cross-match sources to catalog.
+
 
         Parameters
         ----------
@@ -268,22 +256,28 @@ class Catalog(ABC):
         d : masked array
             Distance between match and source in arcsec.
 
+
+        Raises
+        ------
+        `XMatchError` when the database search returned no sources or not enough
+        sources were matched.
+
         """
 
         objids, cat = self.search(sources)
 
         if len(cat) == 0:
-            self.logger.error("No catalog sources to match.")
-            return
+            msg = "No catalog sources to match."
+            self.logger.error(msg)
+            raise XMatchError(msg)
 
         idx, d2d = sources.match_to_catalog_sky(cat)[:2]
         i = d2d < self.match_limit
         n = i.sum()
         if n < self.min_matches:
-            self.logger.error(
-                "Fewer than {} sources matched: {}.".format(self.min_matches, n)
-            )
-            return
+            msg = f"Fewer than {self.min_matches} sources matched: {n}."
+            self.logger.error(msg)
+            raise XMatchError(msg)
 
         self.logger.info("Matched {} sources to photometric catalog.".format(n))
 
@@ -298,6 +292,7 @@ class Catalog(ABC):
     def lookup(self, objids, columns, allow_null=False):
         """Lookup these columns for these objects.
 
+
         Parameters
         ----------
         objids : array-like
@@ -308,6 +303,7 @@ class Catalog(ABC):
 
         allow_null : bool, optional
             Set to ``True`` if null values are allowed.
+
 
         Returns
         -------
@@ -320,7 +316,9 @@ class Catalog(ABC):
         statement = """
         SELECT {columns} from {table}
         WHERE {objid}=?
-        """.format(columns=columns, table=self.table.name, objid=self.table.objid)
+        """.format(
+            columns=columns, table=self.table.name, objid=self.table.objid_column
+        )
 
         rows = []
         for objid in objids:
@@ -334,10 +332,12 @@ class Catalog(ABC):
             else:
                 rows.append(row)
 
+        self.db.commit()
         return rows
 
     def cal_constant(self, matched, m_inst, filt, mlim=[14, 18], gmi_lim=None):
         """Estimate calibration constant without color correction.
+
 
         Parameters
         ----------
@@ -356,6 +356,7 @@ class Catalog(ABC):
         gmi_lim : list, optional
             Only fit stars with this g-i color range, or `None` to
             skip test.
+
 
         Returns
         -------
@@ -421,6 +422,7 @@ class Catalog(ABC):
     ):
         """Estimate calibration constant with color correction.
 
+
         Parameters
         ----------
         matched : array-like
@@ -444,6 +446,7 @@ class Catalog(ABC):
 
         gmi_lim : list, optional
             Only fit stars with this g-i color range, or `None` to disable.
+
 
         Returns
         -------
@@ -522,17 +525,7 @@ class Catalog(ABC):
         if sum(i) == 0:
             raise CalibrationError("All sources masked.")
 
-        if astropy_version[0] > 3 or (
-            astropy_version[0] == 3 and astropy_version[1] >= 1
-        ):
-            # Return order changed in astropy 3.1
-            # (http://docs.astropy.org/en/stable/changelog.html#id10)
-            # Also now returns a boolean mask array rather than a
-            # MaskedArray of the data which could be applied back to
-            # reconstuct 'line' if needed (not currently used)
-            fit, mask = fitter(model, cindex[i], dm[i])
-        else:
-            line, fit = fitter(model, cindex[i], dm[i])
+        fit, mask = fitter(model, cindex[i], dm[i])
         C = fit.slope.value
         zp = fit.intercept.value
         cal_unc = sigma_clipped_stats((dm - fit(cindex))[i])[2]

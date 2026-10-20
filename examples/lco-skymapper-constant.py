@@ -11,12 +11,12 @@ from astropy.table import Table
 
 import calviacat as cvc
 
-if os.path.exists("lco.fits"):
-    hdu = fits.open("lco.fits")
+if os.path.exists("lco-6913550.fits"):
+    hdu = fits.open("lco-6913550.fits")
 else:
     r = requests.get("https://archive-api.lco.global/frames/6913550/").json()
     hdu = fits.open(r["url"])
-    hdu.writeto("lco.fits")
+    hdu.writeto("lco-6913550.fits")
 
 im = hdu["sci"].data
 h = hdu["sci"].header
@@ -52,12 +52,12 @@ g_err = phot["FLUXERR"] / phot["FLUX"] * 1.0857
 zp_mean, zp_median, unc, g, gmi = skym.cal_constant(objids, g_inst, "g", gmi_lim=None)
 
 # plot results
-fig = plt.figure(1)
-fig.clear()
-ax = fig.gca()
+fig, ax = plt.subplots(num=1, clear=True)
 ax.scatter(g, g - g_inst, marker=".", color="k")
-ax.axhline(zp_mean)
-ax.axhline(zp_median)
-plt.setp(ax, xlabel="$g$ (mag)", ylabel=r"$g - g_{\rm inst}$ (mag)")
+ax.axhline(zp_mean, label=f"Mean: {zp_mean:.3f}")
+ax.axhline(zp_median, ls="--", label=f"Median: {zp_median:.3f}")
+ax.set(xlabel="$g$ (mag)", ylabel=r"$g - g_{\rm inst}$ (mag)")
+ax.minorticks_on()
+plt.legend()
 plt.tight_layout()
 plt.savefig("lco-skymapper-constant.png", dpi=150)

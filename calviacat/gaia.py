@@ -7,7 +7,8 @@ import numpy as np
 from astropy.table import Column
 from astroquery.utils.tap.core import TapPlus
 
-from .catalog import Catalog, TableDefinition
+from .catalog import Catalog
+from .table import TableDefinition
 
 # column names and SQLite type
 COLUMN_DEFS = (
@@ -38,6 +39,20 @@ COLUMN_DEFS = (
     ("_imag", "FLOAT"),
     ("_err_imag", "FLOAT"),
 )
+
+filter2col = {}
+for f in ["G", "bp", "rp"]:
+    filter2col[f] = {
+        "mag": f"phot_{f.lower():}_mean_mag",
+        "err": f"phot_{f.lower():}_mean_flux_over_error",
+    }
+# Add synthesized SDSS mags
+for f in ["g", "r", "i"]:
+    filter2col[f] = {"mag": f"_{f:}mag", "err": f"_err_{f:}mag"}
+
+table_def = TableDefinition("gaia", COLUMN_DEFS, "source_id", "ra", "dec", filter2col)
+
+del filter2col
 
 
 class Gaia(Catalog):
@@ -74,21 +89,10 @@ class Gaia(Catalog):
             "edr3": "gaiaedr3.gaia_source",
             "dr3": "gaiadr3.gaia_source",
         }
-        filter2col = {}
-        for f in ["G", "bp", "rp"]:
-            filter2col[f] = {
-                "mag": f"phot_{f.lower():}_mean_mag",
-                "err": f"phot_{f.lower():}_mean_flux_over_error",
-            }
-        # Add synthesized SDSS mags
-        for f in ["g", "r", "i"]:
-            filter2col[f] = {"mag": f"_{f:}mag", "err": f"_err_{f:}mag"}
-        gaia = TableDefinition(
-            "gaia", COLUMN_DEFS, "source_id", "ra", "dec", filter2col
-        )
+
         self.dr = dr
         self.gaia_table = table_mapping.get(dr.lower, table_mapping["dr2"])
-        super().__init__(dbfile, gaia, max_records=max_records, **kwargs)
+        super().__init__(dbfile, table_def, max_records=max_records, **kwargs)
 
     def _fetch_field(self, ra: float, dec: float, sr: float) -> None:
         self.logger.debug(

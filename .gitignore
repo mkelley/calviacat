@@ -104,6 +104,6 @@ venv.bak/
 .mypy_cache/
 
 *~
-examples/lco.fits
+examples/*.fits
 examples/cat.db
 calviacat/_version.py

@@ -2,12 +2,17 @@
 
 __all__ = ["RefCat2"]
 
+import os
 import random
 import string
 
-from mastcasjobs import MastCasJobs
+try:
+    from mastcasjobs import MastCasJobs
+except ImportError:
+    MastCasJobs = None
 
-from .catalog import Catalog, TableDefinition
+from .catalog import Catalog
+from .table import TableDefinition
 
 
 class CasJobsFailed(Exception):
@@ -19,23 +24,20 @@ COLUMN_DEFS = (
     ("objid", "INTEGER PRIMARY KEY"),
     ("RA", "FLOAT"),
     ("Dec", "FLOAT"),
+    ("Gaia", "FLOAT"),
+    ("dGaia", "FLOAT"),
+    ("BP", "FLOAT"),
+    ("dBP", "FLOAT"),
+    ("RP", "FLOAT"),
+    ("dRP", "FLOAT"),
     ("g", "FLOAT"),
     ("dg", "FLOAT"),
-    ("gchi", "FLOAT"),
-    ("gcontrib", "INTEGER"),
     ("r", "FLOAT"),
     ("dr", "FLOAT"),
-    ("rchi", "FLOAT"),
-    ("rcontrib", "INTEGER"),
     ("i", "FLOAT"),
     ("di", "FLOAT"),
-    ("ichi", "FLOAT"),
-    ("icontrib", "INTEGER"),
     ("z", "FLOAT"),
     ("dz", "FLOAT"),
-    ("zchi", "FLOAT"),
-    ("zcontrib", "INTEGER"),
-    ("nstat", "INTEGER"),
     ("J", "FLOAT"),
     ("dJ", "FLOAT"),
     ("H", "FLOAT"),
@@ -44,9 +46,23 @@ COLUMN_DEFS = (
     ("dK", "FLOAT"),
 )
 
+filter2col = {}
+for f in ["BP", "RP", "g", "r", "i", "z", "J", "H", "K"]:
+    filter2col[f] = {"mag": f, "err": "d{}".format(f)}
+filter2col["G"] = {"mag": "Gaia", "err": "dGaia"}
+
+# change table name and objid here and at calviacat.data.index
+table_def = TableDefinition("refcat2", COLUMN_DEFS, "objid", "RA", "Dec", filter2col)
+
+del filter2col
+
 
 class RefCat2(Catalog):
     """ATLAS-RefCat2 catalog queries.
+
+    Catalog includes Gaia G, BP, RP; g, r, i, z; and 2MASS J, H, K.
+
+    Note, the Gaia G magnitudes are labeled "Gaia".
 
 
     Parameters
@@ -56,11 +72,11 @@ class RefCat2(Catalog):
         Database file name.
 
     wsid : int, optional
-        CasJobs WSID.  If not given, then the enviornment variable
+        CasJobs WSID.  If not given, then the environment variable
         ``CASJOBS_WSID`` will be used.
 
     password : string, optional
-        CasJobs password.  If not given, then the enviornment variable
+        CasJobs password.  If not given, then the environment variable
         ``CASJOBS_PW`` will be used.
 
     **kwargs
@@ -69,16 +85,22 @@ class RefCat2(Catalog):
     """
 
     def __init__(self, dbfile, wsid=None, password=None, max_records=5000, **kwargs):
-        filter2col = {}
-        for f in "griz":
-            filter2col[f] = {"mag": f, "err": "d{}".format(f)}
-        skym = TableDefinition("refcat2", COLUMN_DEFS, "objid", "RA", "Dec", filter2col)
-        super().__init__(dbfile, skym, max_records=max_records, **kwargs)
+        super().__init__(dbfile, table_def, max_records=max_records, **kwargs)
+
         self.credentials = {}
-        self.credentials["userid"] = wsid
-        self.credentials["password"] = password
+        self.credentials["userid"] = (
+            os.environ.get("CASJOBS_WSID") if wsid is None else wsid
+        )
+        self.credentials["password"] = (
+            os.environ.get("CASJOBS_PW") if password is None else password
+        )
 
     def _fetch_field(self, ra: float, dec: float, sr: float) -> None:
+        if MastCasJobs is None:
+            raise ImportError(
+                "Attemping online query, but mastcasjobs is not installed"
+            )
+
         name = "calviacat_{}".format(
             "".join(random.choices(string.ascii_uppercase, k=5))
         )
