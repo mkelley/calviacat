@@ -7,7 +7,7 @@ import sqlite3
 from ...table import registry as table_registry
 
 
-def create_index(db: sqlite3.Connection | sqlite3.Cursor, table: str) -> bool:
+def create_index(db: sqlite3.Connection, table: str) -> bool:
     """Create the spatial index.
 
     If the index already exists, nothing is done.
@@ -15,7 +15,7 @@ def create_index(db: sqlite3.Connection | sqlite3.Cursor, table: str) -> bool:
 
     Parameters
     ----------
-    db : sqlite3 Connection or Cursor
+    db : sqlite3 Connection
         The Calviacat sqlite3 database object.
 
     table : str, optional
@@ -105,7 +105,7 @@ def create_index(db: sqlite3.Connection | sqlite3.Cursor, table: str) -> bool:
     return True
 
 
-def drop_index(db: sqlite3.Connection | sqlite3.Cursor, table: str):
+def drop_index(db: sqlite3.Connection, table: str):
     """Drop the spatial index and associated insert trigger.
 
     No error is raised if the index or trigger does not exist.
@@ -113,7 +113,7 @@ def drop_index(db: sqlite3.Connection | sqlite3.Cursor, table: str):
 
     Parameters
     ----------
-    db : sqlite3 Connection or Cursor
+    db : sqlite3 Connection
         The Calviacat sqlite3 database object.
 
     table : str
