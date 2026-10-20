@@ -2,10 +2,9 @@
 
 __all__ = ["PanSTARRS1"]
 
-import io
+import json
 
 import requests
-from astropy.io import votable
 
 from .catalog import Catalog
 from .table import TableDefinition
@@ -24,8 +23,8 @@ COLUMN_DEFS = (
     ("skyCellID", "INTEGER"),
     ("objInfoFlag", "INTEGER"),
     ("qualityFlag", "INTGER"),
-    ("raStack", "TEXT"),
-    ("decStack", "TEXT"),
+    ("raStack", "FLOAT"),
+    ("decStack", "FLOAT"),
     ("raStackErr", "FLOAT"),
     ("decStackErr", "FLOAT"),
     ("epochMean", "FLOAT"),
@@ -122,21 +121,14 @@ class PanSTARRS1(Catalog):
         }
 
         q = requests.get(self.URL_BASE, params=params)
+        data = json.loads(q.text)["data"]
 
-        with io.BytesIO(q.text.encode()) as xml:
-            breakpoint()
-            try:
-                tab = votable.parse_single_table(xml).to_table()
-            except Exception:
-                self.logger.error(q.text)
-                return
-
-        self.logger.debug(f"Updating {self.table.name} with {len(tab)} sources.")
+        self.logger.debug(f"Updating {self.table.name} with {len(data)} sources.")
 
         self.db.executemany(
             "INSERT OR IGNORE INTO {} VALUES({})".format(
                 self.table.name, ",".join("?" * len(self.table.columns))
             ),
-            tab,
+            data,
         )
         self.db.commit()
