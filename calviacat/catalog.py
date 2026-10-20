@@ -306,7 +306,9 @@ class Catalog(ABC):
 
         return matched, d
 
-    def lookup(self, objids, columns, allow_null=False):
+    def lookup(
+        self, objids: np.ndarray, columns: str | None = None, allow_null: bool = False
+    ) -> list:
         """Lookup these columns for these objects.
 
 
@@ -315,8 +317,8 @@ class Catalog(ABC):
         objids : array-like
             Catalog object IDs.  May be a `~numpy.ma.MaskedArray`.
 
-        columns : string
-            Database columns to return.
+        columns : string, optional
+            Database columns to return.  Default is to return all.
 
         allow_null : bool, optional
             Set to ``True`` if null values are allowed.
@@ -329,6 +331,9 @@ class Catalog(ABC):
             matched, the row will be an empty list.
 
         """
+
+        if columns is None:
+            columns = ",".join(self.table.columns)
 
         statement = """
         SELECT {columns} from {table}
