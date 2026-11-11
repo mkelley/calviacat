@@ -37,6 +37,10 @@ jobs:
         - name: Code style checks
           linux: codestyle
 
+        - name: Python 3.11, measuring coverage
+          linux: py311-test
+          coverage: codecov
+
         - name: Python 3.14, measuring coverage
           linux: py314-test
           coverage: codecov

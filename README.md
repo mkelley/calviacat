@@ -1,9 +1,9 @@
-# calviacat v1.3.1
+# calviacat
 Calibrate star photometry by comparison to a catalog.  PanSTARRS 1, ATLAS-RefCat2, SkyMapper, and Gaia catalogs currently implemented.  Catalog queries are cached so that subsequent calibrations of the same or similar fields can be more quickly executed.
 
 ## Attribution and license
 
-calviacat is written by Michael S. P. Kelley, with contributions from: Tim Lister.  It is licensed with the MIT License (see LICENSE for details).
+Calviacat is written by Michael S. P. Kelley, with contributions from Tim Lister.  It is licensed with the MIT License (see LICENSE for details).
 
 When one needs to cite the `calviacat` concept:
 
@@ -17,22 +17,25 @@ Otherwise, when traceability to a specific version is needed, select the DOI app
 
 * sqlite3
 * requests
-* astropy, v3 or later
+* astropy
 * astroquery
-* [mastcasjobs](https://github.com/rlwastro/mastcasjobs) for ATLAS-RefCat2
+* pyvo
+* scipy
+
+Optional
+* mastcasjobs, for online searches of ATLAS-RefCat2
 
 ## Examples
 
-See the `examples/` directory for example scripts that calibrate Las
-Cumbres Observatory images of 41P/Tuttle-Giacobini-Kresak.
+See the `examples/` directory for example scripts that calibrate Las Cumbres Observatory images of 41P/Tuttle-Giacobini-Kresák.
 
 ## PanSTARRS catalog with color correction
 
 ``` python
-ps1 = PanSTARRS1('cat.db')
+ps1 = PanSTARRS1("cat.db")
 ps1.fetch_field(lco)
 objids, distances = ps1.xmatch(lco)
-zp, C, unc, g, gmr, gmi = ps1.cal_color(objids, g_inst, 'g', 'g-r')
+zp, C, unc, g, gmr, gmi = ps1.cal_color(objids, g_inst, "g", "g-r")
 ```
 
 ![alt text](examples/lco-ps1-color-corrected.png "PanSTARRS 1, with color correction, best-fit calibration")
@@ -40,34 +43,61 @@ zp, C, unc, g, gmr, gmi = ps1.cal_color(objids, g_inst, 'g', 'g-r')
 The color correction slope may also be held fixed with the `C` parameter:
 
 ``` python
-zp, C, unc, g, gmr, gmi = ps1.cal_color(objids, g_inst, 'g', 'g-r', C=-0.089)
+zp, C, unc, g, gmr, gmi = ps1.cal_color(objids, g_inst, "g", "g-r", C=-0.089)
 ```
 
 ## SkyMapper catalog without color correction
 
-No r-band coverage in DR1 for the example image, so just calibrate to g without a color correction.
+Calibrate to SkyMapper's g without a color correction.
 
 ``` python
-skym = cvc.SkyMapper('cat.db')
+skym = cvc.SkyMapper("cat.db")
 skym.fetch_field(lco)
 objids, distances = skym.xmatch(lco)
-zp_mean, zp_median, unc, g, gmi = skym.cal_constant(objids, g_inst, 'g')
+zp_mean, zp_median, unc, g, gmi = skym.cal_constant(objids, g_inst, "g")
 ```
 
 ![alt text](examples/lco-skymapper-constant.png "SkyMapper, no color correction, best-fit calibration")
 
 ## ATLAS-RefCat2
 
-ATLAS-RefCat2 queries are executed with MAST CASJOBS, and therefore requires your MAST WSID (from <http://mastweb.stsci.edu/ps1casjobs/changedetails.aspx> after you login to Casjobs).  They may also come from the CASJOBS_WSID and CASJOBS_PW environment variables.
+ATLAS RefCat2 is an all sky photometric and astrometric catalog for g-, r-, i-, and z-band photometry on the PS1 system.  The catalog also includes Gaia DR2 G, BP, and RP and 2MASS J, H, and K photometry.  See [Tonry et al. (2018)](https://scixplorer.org/abs/2018ApJ...867..105T/abstract) for details.  The catalog data may be obtained online, or the database can be prepopulated from CSV.
+
+### Offline catalogs
+
+Download and unzip the MAST-formatted CSV files from <https://archive.stsci.edu/hlsp/atlas-refcat2>, then read in the data with the following command:
+
+```bash
+python3 -m calviacat.data.refcat2 <csv_file> <db_file>
+```
+
+Where ``<csv_file>`` and ``<db_file>`` are the names of the CSV file and the Calviacat database file, respectively.  Processing one file can take about 30 to 60 minutes.  After all the files are added to the database, create the spatial index with:
+
+```bash
+python3 -m calviacat.data.index <db_file> refcat2
+```
+
+Creating the index for the full data set can take 9 hours.  The final database size will be about 275 GB.
+
+### Online catalogs
+
+Online ATLAS-RefCat2 queries are executed with MAST CASJOBS, and therefore requires your MAST WSID (from <http://mastweb.stsci.edu/ps1casjobs/changedetails.aspx> after you login to Casjobs).  They may also come from the CASJOBS_WSID and CASJOBS_PW environment variables.
+
+### Usage
 
 With RefCat2, we can calibrate the last example using a color correction:
 
-
 ``` python
-rc2 = cvc.RefCat2('cat.db')
+rc2 = cvc.RefCat2("cat.db")
 rc2.fetch_field(lco)
 objids, distances = rc2.xmatch(lco)
-zp, C, unc, g, gmr, gmi = rc2.cal_color(objids, g_inst, 'g', 'g-r')
+zp, C, unc, g, gmr, gmi = rc2.cal_color(objids, g_inst, "g", "g-r")
+```
+
+Note the Gaia bandpasses are named "G", "BP", and "RP" in the catalog:
+
+```
+zp, C, unc, g, gmr, gmi = rc2.cal_color(objids, g_inst, "G", "BP-RP")
 ```
 
 ![alt text](examples/lco-refcat2-color-corrected.png "ATLAS-RefCat2, with color correction, best-fit calibration")

@@ -7,7 +7,8 @@ import io
 import requests
 from astropy.io import votable
 
-from .catalog import Catalog, TableDefinition
+from .catalog import Catalog
+from .table import TableDefinition
 
 # column names and SQLite type
 COLUMN_DEFS = (
@@ -76,16 +77,20 @@ COLUMN_DEFS = (
     ("yflags", "INTEGER"),
 )
 
+filter2col = {}
+for f in "grizy":
+    filter2col[f] = {"mag": f + "meanpsfmag", "err": f + "meanpsfmag" + "err"}
+
+table_def = TableDefinition(
+    "panstarrs1", COLUMN_DEFS, "objid", "ramean", "decmean", filter2col
+)
+
+del filter2col
+
 
 class PanSTARRS1(Catalog):
-    def __init__(self, dbfile, phot_type="meanpsfmag", **kwargs):
-        filter2col = {}
-        for f in "grizy":
-            filter2col[f] = {"mag": f + phot_type, "err": f + phot_type + "err"}
-        ps1 = TableDefinition(
-            "panstarrs1", COLUMN_DEFS, "objid", "ramean", "decmean", filter2col
-        )
-        super().__init__(dbfile, ps1, **kwargs)
+    def __init__(self, dbfile, **kwargs):
+        super().__init__(dbfile, table_def, **kwargs)
 
     def _fetch_field(self, ra: float, dec: float, sr: float) -> None:
         self.logger.debug(

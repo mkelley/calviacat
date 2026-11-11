@@ -11,12 +11,12 @@ from astropy.table import Table
 
 import calviacat as cvc
 
-if os.path.exists("lco.fits"):
-    hdu = fits.open("lco.fits")
+if os.path.exists("lco-6913550.fits"):
+    hdu = fits.open("lco-6913550.fits")
 else:
     r = requests.get("https://archive-api.lco.global/frames/6913550/").json()
     hdu = fits.open(r["url"])
-    hdu.writeto("lco.fits")
+    hdu.writeto("lco-6913550.fits")
 
 im = hdu["sci"].data
 h = hdu["sci"].header
@@ -50,12 +50,12 @@ g_err = phot["FLUXERR"] / phot["FLUX"] * 1.0857
 zp, C, unc, g, gmr, gmi = rc2.cal_color(objids, g_inst, "g", "g-r")
 
 # plot results
-fig = plt.figure(1)
-fig.clear()
-ax = fig.gca()
+fig, ax = plt.subplots(num=1, clear=True)
 ax.scatter(gmr, g - g_inst, marker=".", color="k")
-x = np.linspace(0, 1.5)
-ax.plot(x, C * x + zp, "r-")
-plt.setp(ax, xlabel="$g-r$ (mag)", ylabel=r"$g-g_{\rm inst}$ (mag)")
+x = np.linspace(0, 2)
+ax.plot(x, C * x + zp, "r-", label=f"{zp:.3f} + {C:.3f}($g-r$) [±{unc:.3f}]")
+ax.set(xlabel="$g-r$ (mag)", ylabel=r"$g-g_{\rm inst}$ (mag)")
+ax.legend()
+ax.minorticks_on()
 plt.tight_layout()
 plt.savefig("lco-refcat2-color-corrected.png", dpi=150)
